@@ -252,6 +252,13 @@ class ImageListener(BaseListener, metaclass=abc.ABCMeta):
 
 
 class ForwardVisualizer(ImageListener):
+    """
+        This class is designed for processing image data in real-time. Generally it has the following few functions:
+        1. Receive image data from ActiveMQ (derived from ImageListener).
+        2. Forward image data to the server.
+        3. Manage image processing components.
+        4. Visualize image data for selected cameras.
+    """
     def __init__(self, cm: CM, addr_in: tuple, addr_out: tuple, topic=None):
         super(ForwardVisualizer, self).__init__(cm, topic, decode=False)
         self.running = False
