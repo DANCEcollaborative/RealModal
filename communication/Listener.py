@@ -388,7 +388,9 @@ class ForwardVisualizer(ImageListener):
                 self.base64_image_lock.release()
                 # convert to .jpg to minimum image size.
                 img = self.decode_msg(img)
-                img = base64.b64encode(cv2.imencode(".jpg", img)[1])
+                if img is None:
+                    continue
+                img = base64.b64encode(cv2.imencode(".jpg", img)[1]).decode()
             else:
                 continue
             while not self.ready_to_send:
