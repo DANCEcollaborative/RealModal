@@ -439,3 +439,38 @@ class ForwardVisualizer(ImageListener):
                 continue
             except ValueError as e:
                 self.restart_socket(self.receive_socket)
+
+
+class AudioInfoVisualizer(BaseListener):
+    def __init__(self, cm, topic=None):
+        super(AudioInfoVisualizer, self).__init__(cm)
+        self.topic = topic
+        if topic is not None:
+            self.subscribe_to(self.topic)
+        self.angle = -100.
+        self.running = False
+
+    @staticmethod
+    def draw_axis(angle):
+        ret = np.ones((21, 500, 3), dtype=np.uint8) * 240
+        if angle > -1:
+            x = int((angle + 1) / 2 * 450 + 25)
+            y = 10
+            print(x, y)
+            cv2.circle(ret, (x, y), 5, (0, 255, 0), cv2.FILLED)
+        return ret
+
+    def start(self):
+        self.running = True
+        while self.running:
+            img = self.draw_axis(self.angle)
+            cv2.imshow("Smart Room - Sound Direction", img)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                self.stop()
+
+    def stop(self):
+        self.running = False
+        cv2.destroyAllWindows()
+
+    def on_message(self, headers, msg):
+        self.angle = float(msg)

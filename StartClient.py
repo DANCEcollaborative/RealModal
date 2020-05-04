@@ -1,10 +1,11 @@
 from utils.GlobalVaribles import GlobalVariables as GV
 
 from communication.CommunicationManager import CommunicationManager as CM
-from communication.Listener import ForwardVisualizer
+from communication.Listener import ForwardVisualizer, AudioInfoVisualizer
 from component.RemoteListener import FaceRecognitionListener, OpenPoseListener, PositionDisplayListener
 
 import time
+import _thread
 
 if __name__ == "__main__":
     # Initialize communication manager to receive massage from Psi.
@@ -21,7 +22,10 @@ if __name__ == "__main__":
     if GV.UseFaceRecognition:
         RPD = PositionDisplayListener("Position")
         visualizer.add(RPD)
-    visualizer.start()
+    _thread.start_new_thread(visualizer.start, ())
+
+    audioVisualizer = AudioInfoVisualizer(GV.manager, "PSI_Python_AudioInfo")
+    audioVisualizer.start()
 
     # Block the main process.
     time.sleep(1000000)
