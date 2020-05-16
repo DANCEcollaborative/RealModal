@@ -18,6 +18,9 @@ class GlobalVariables():
     """
     Runtime variables
     """
+    # The flag of whether the program has come to an end.
+    ended = False
+
     # Threading locks of different components.
     locks = dict()
 
@@ -39,17 +42,17 @@ class GlobalVariables():
     Configurations:
     """
     UseOpenpose = True
-    UseFaceRecognition = False
-    UsePosition = False
+    UseFaceRecognition = True
+    UsePosition = True
 
     # Which backend is used to calculate position information
     PositionBackend = "FaceRecognition"
 
     # The ip address to establish sockets between clients and server.
-    server_addr_in = ("128.2.204.127", 6416)
-    server_addr_out = ("128.2.204.127", 6417)
-    client_addr_in = ("brandy.lti.cs.cmu.edu", 6417)
-    client_addr_out = ("brandy.lti.cs.cmu.edu", 6416)
+    server_addr_in = ("128.2.204.127", 5416)
+    server_addr_out = ("128.2.204.127", 5417)
+    client_addr_in = ("brandy.lti.cs.cmu.edu", 5417)
+    client_addr_out = ("brandy.lti.cs.cmu.edu", 5416)
 
     """
     Camera information:

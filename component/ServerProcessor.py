@@ -95,7 +95,7 @@ class OpenPoseProcessor(BaseImageProcessor):
         # This is because self.poseKeypoints will be a very weird value if no people is detected due to some features
         # or bugs in the  Openpose Library.
         if l > 0:
-            soc.send_str(base64.b64encode(self.poseKeypoints.tostring()))
+            soc.send_data(base64.b64encode(self.poseKeypoints.tostring()))
 
 
 class PositionProcessor(BaseImageProcessor):

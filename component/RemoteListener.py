@@ -59,7 +59,11 @@ class OpenPoseListener(BaseRemoteListener):
         pose_num = socket.recv_int()
         print("%d pose(s) to receive." % pose_num)
         if pose_num > 0:
-            buf = np.fromstring(base64.b64decode(socket.recv_str())).tolist()
+            data = socket.recv_data()
+            decoded = base64.b64decode(data)
+            array = np.fromstring(decoded, dtype=np.float32).reshape(pose_num, 25, 3)
+            buf = array.tolist()
+        print(buf)
         return buf
 
     def draw(self, img, buf):

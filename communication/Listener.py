@@ -342,6 +342,7 @@ class ForwardVisualizer(ImageListener):
         self.receive_socket.stop()
         self.image_socket.stop()
         cv2.destroyAllWindows()
+        GV.ended = True
 
     @staticmethod
     def restart_socket(s):
@@ -436,3 +437,5 @@ class ForwardVisualizer(ImageListener):
                 continue
             except ValueError as e:
                 self.restart_socket(self.receive_socket)
+            except OSError as e:
+                print("Socket Closed.")
