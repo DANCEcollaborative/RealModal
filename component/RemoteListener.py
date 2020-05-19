@@ -1,3 +1,4 @@
+from Socket.BaseSocket import BaseTCPSocket
 from utils.GlobalVaribles import GlobalVariables as GV
 
 import abc
@@ -12,6 +13,23 @@ import base64
 class BaseRemoteListener(metaclass=abc.ABCMeta):
     def __init__(self, topic=None):
         self.topic = topic
+
+    @staticmethod
+    def receive_properties(socket:BaseTCPSocket)->dict:
+        prop_dict = dict()
+        prop_str = socket.recv_str()
+        while prop_str != "END":
+            res = prop_str.split(":", 2)
+            if len(res) == 3:
+                prop_name, prop_type, prop_content = res
+                if prop_type == "str":
+                    prop_dict[prop_name] = str(prop_content)
+                elif prop_type == "int":
+                    prop_dict[prop_name] = int(prop_content)
+                elif prop_type == "float":
+                    prop_dict[prop_name] = float(prop_content)
+            prop_str = socket.recv_str()
+        return prop_dict
 
     @abc.abstractmethod
     def receive(self, socket):
@@ -81,16 +99,29 @@ class PositionDisplayListener(BaseRemoteListener):
         super(PositionDisplayListener, self).__init__(topic)
 
     def receive(self, socket: DTC):
+        prop_dict = self.receive_properties(socket)
         pos_num = socket.recv_int()
         print("%d position(s) to receive." % pos_num)
         to_send = str(pos_num)
+        raw_info = []
         person = []
         for i in range(pos_num):
             print("receiving person %d" % i)
+            x0 = socket.recv_float()
+            y0 = socket.recv_float()
             x = socket.recv_float()
             y = socket.recv_float()
             z = socket.recv_float()
-            person.append((x, y, z))
+            raw_info.append((x0, y0, x, y, z))
+        for i, (x0, y0, x, y, z) in enumerate(raw_info):
+            if GV.UseDepthCamera:
+                result = GV.LocationQuerier.query(prop_dict["timestamp"], Point2D(x0, y0))
+                # TODO:[URGENT!] camera coordination transformation
+                # result = camera[cid].camera_to_real
+                person.append((result.x, result.y, result.z))
+            else:
+                person.append((x, y, z))
+
             to_send += f";{x}:{y}:{z}"
         logging(to_send)
         self.update_layout_image(GV.CornerPosition, person)

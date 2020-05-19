@@ -143,15 +143,15 @@ class PositionProcessor(BaseImageProcessor):
                 y0 = float(y0) / h
                 line_center = GV.CameraMapping[camera_ids[0]](Point2D(x0, y0))
                 p_center = line_center.find_point_by_z(GV.SingleCameraDistance)
-                self.positions.append(p_center.to_vec())
+                self.positions.append(((x0, y0), p_center.to_vec()))
         else:
             # TODO: add position recognition when using several cameras.
             pass
 
     def process_openpose(self, info):
         # TODO: add position recognition when using a single camera.
-        camera_ids = GV.CameraMapping.keys()
-        # check whether openpose is enabled
+        camera_ids = list(GV.CameraMapping.keys())
+        # check whether face recognition is enabled
         if not GV.UseOpenpose:
             if not self.backendNotFound:
                 self.backendNotFound = True
@@ -163,54 +163,74 @@ class PositionProcessor(BaseImageProcessor):
         while not flag:
             flag = True
             for cid in camera_ids:
-                flag = flag and (cid in GV.OpenPoseResult.keys())
-
+                flag = flag and (cid in GV.OpenPoseResult)
         GV.locks["OpenPose"].acquire()
         keypoints = GV.OpenPoseResult.copy()
         GV.locks["OpenPose"].release()
-        # Determine which body key point is used to calculate positions
-        num_nose = 0
-        num_neck = 0
-        num_midhip = 0
+
         nose_index = 0
         neck_index = 1
         midhip_index = 8
-        for cid in camera_ids:
-            for points in keypoints[cid]:
-                if not is_zero(points[nose_index]):
-                    num_nose += 1
+
+        if len(camera_ids) == 1:
+            self.positions = []
+            cid = camera_ids[0]
+            for i, points in enumerate(keypoints[cid]):
                 if not is_zero(points[neck_index]):
-                    num_neck += 1
-                if not is_zero(points[midhip_index]):
-                    num_midhip += 1
-        use_index = 1
-        if num_neck >= num_nose and num_neck >= num_midhip:
-            use_index = neck_index
-        elif num_nose >= num_midhip:
-            use_index = nose_index
+                    use_index = neck_index
+                elif not is_zero(points[nose_index]):
+                    use_index = nose_index
+                elif not is_zero(points[midhip_index]):
+                    use_index = midhip_index
+                else:
+                    continue
+                x0, y0, _ = points[use_index]
+                line_center = GV.CameraMapping[camera_ids[0]](Point2D(x0, y0))
+                p_center = line_center.find_point_by_z(GV.SingleCameraDistance)
+                self.positions.append((Point2D(x0, y0), p_center.to_vec()))
         else:
-            use_index = midhip_index
+            # Determine which body key point is used to calculate positions
+            num_nose = 0
+            num_neck = 0
+            num_midhip = 0
+            for cid in camera_ids:
+                for points in keypoints[cid]:
+                    if not is_zero(points[nose_index]):
+                        num_nose += 1
+                    if not is_zero(points[neck_index]):
+                        num_neck += 1
+                    if not is_zero(points[midhip_index]):
+                        num_midhip += 1
+            use_index = 1
+            if num_neck >= num_nose and num_neck >= num_midhip:
+                use_index = neck_index
+            elif num_nose >= num_midhip:
+                use_index = nose_index
+            else:
+                use_index = midhip_index
 
-        # Gather the line information
-        start_point = []
-        direction = []
-        for cid in camera_ids:
-            start_point.append(GV.CameraPosition[cid])
-            direction.append([])
-            for points in keypoints[cid]:
-                keypoint = points[use_index]
-                if not is_zero(keypoint):
-                    direction[-1].append(GV.CameraMapping[cid](keypoint[0], keypoint[1]))
+            # Gather the line information
+            start_point = []
+            direction = []
+            for cid in camera_ids:
+                start_point.append(GV.CameraPosition[cid])
+                direction.append([])
+                for points in keypoints[cid]:
+                    keypoint = points[use_index]
+                    if not is_zero(keypoint):
+                        direction[-1].append(GV.CameraMapping[cid](keypoint[0], keypoint[1]))
 
-        # Calculate position
-        self.positions = calc_position(start_point, direction)
+            # Calculate position
+            self.positions = calc_position(start_point, direction)
 
     def send(self, soc: BaseTCPSocket):
         l = len(self.positions)
         print("find %d person(s) in the space" % l)
         soc.send_int(l)
-        for i, (x, y, z) in enumerate(self.positions):
+        for i, (p, (x, y, z)) in enumerate(self.positions):
             print("sending person %d" % i)
+            soc.send_float(p.x)
+            soc.send_float(p.y)
             soc.send_float(x)
             soc.send_float(y)
             soc.send_float(z)
