@@ -200,11 +200,7 @@ class ImageListener(BaseListener, metaclass=abc.ABCMeta):
         """
         b = base64.b64decode(msg)
         try:
-            img = np.frombuffer(b, dtype=np.uint16).reshape(self.height, self.width, -1)
-            mid_x = self.height // 2
-            mid_y = self.width // 2
-            print(img[mid_x - 5:mid_x + 5, mid_y - 5:mid_y + 5, :])
-            img = img * 50
+            img = np.frombuffer(b, dtype=np.uint8).reshape(self.height, self.width, -1)
         # TODO: specify possible exceptions here.
         except Exception as e:
             img = None

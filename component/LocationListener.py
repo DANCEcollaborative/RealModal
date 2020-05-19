@@ -9,7 +9,7 @@ from communication.CommunicationManager import CommunicationManager as CM
 
 class LocationQuerier(BaseListener):
     def __init__(self, cm: CM, topic_in=None, topic_out=None):
-        super(BaseListener, self).__init__(cm)
+        super(LocationQuerier, self).__init__(cm)
         self.topic_in = topic_in
         self.topic_out = topic_out
         self.state = "Available"

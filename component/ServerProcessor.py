@@ -102,12 +102,14 @@ class PositionProcessor(BaseImageProcessor):
     def __init__(self, backend="Openpose", topic=None):
         super(PositionProcessor, self).__init__(topic)
         self.backendNotFound = False
+        self.timestamp = None
         self.positions = []
         if backend not in ["Openpose", "FaceRecognition"]:
             raise ValueError("Undefined backend.")
         self.backend = backend
 
     def process(self, info):
+        self.timestamp = info["timestamp"]
         if self.backend == "Openpose":
             self.process_openpose(info)
         elif self.backend == "FaceRecognition":
@@ -143,7 +145,7 @@ class PositionProcessor(BaseImageProcessor):
                 y0 = float(y0) / h
                 line_center = GV.CameraMapping[camera_ids[0]](Point2D(x0, y0))
                 p_center = line_center.find_point_by_z(GV.SingleCameraDistance)
-                self.positions.append(((x0, y0), p_center.to_vec()))
+                self.positions.append((Point2D(x0, y0), p_center.to_vec()))
         else:
             # TODO: add position recognition when using several cameras.
             pass
@@ -224,6 +226,8 @@ class PositionProcessor(BaseImageProcessor):
             self.positions = calc_position(start_point, direction)
 
     def send(self, soc: BaseTCPSocket):
+        soc.send_str(f"timestamp:int:{self.timestamp}")
+        soc.send_str("END")
         l = len(self.positions)
         print("find %d person(s) in the space" % l)
         soc.send_int(l)
