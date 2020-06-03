@@ -16,7 +16,8 @@ class BaseListener(metaclass=abc.ABCMeta):
     """
     def __init__(self, cm: CM):
         """
-            Initialization of a listener.
+            Initialization of a l
+            istener.
         :param cm: CommunicationManager
             Communication manager you're using.
         """

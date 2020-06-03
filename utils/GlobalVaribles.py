@@ -44,12 +44,12 @@ class GlobalVariables():
     """
     Configurations:
     """
-    UseOpenpose = False
-    UseFaceRecognition = True
+    UseOpenpose = True
+    UseFaceRecognition = False
     UsePosition = True
 
     # Which backend is used to calculate position information
-    PositionBackend = "FaceRecognition"
+    PositionBackend = "OpenPose"
 
     # Whether to use data from depth camera to get people location.
     UseDepthCamera = True

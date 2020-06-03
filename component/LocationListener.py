@@ -18,6 +18,8 @@ class LocationQuerier(BaseListener):
 
     def query(self, cid: str, timestamp: int, pixel: Point2D):
         self.state = "Querying"
+        print("Send to topic: ", self.topic_out)
+        print(f"Content: {timestamp};{pixel.x};{pixel.y}")
         self.cm.send(self.topic_out, f"{timestamp};{pixel.x};{pixel.y}")
         while self.state != "Pending":
             pass
@@ -26,11 +28,17 @@ class LocationQuerier(BaseListener):
 
     def on_message(self, headers, msg):
         # TODO: add support for more cameras
-        timestamp, x, y, z = msg.split(';')
-        # transform to centimeters.
-        self.result = Point3D(
-            float(x),
-            float(y),
-            float(z)
-        ) * 10
+        print("Get location message from PSI:", msg)
+        msg_split = msg.split(";")
+        if msg_split[1] == "null":
+            # Cannot get the location information from depth camera
+            self.result = p_zero()
+        else:
+            timestamp, x, y, z = msg.split(';')
+            # transform to centimeters.
+            self.result = Point3D(
+                float(x),
+                float(y),
+                float(z)
+            ) * 100
         self.state = "Pending"

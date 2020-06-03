@@ -156,7 +156,6 @@ class ForwardVisualizer(ImageListener):
                 img = self.decode_msg(img)
                 if img is None:
                     continue
-                print(img.shape)
                 img = base64.b64encode(cv2.imencode(".jpg", img)[1]).decode()
             else:
                 continue
@@ -190,6 +189,7 @@ class ForwardVisualizer(ImageListener):
                 logging(topic.split(":"))
                 if topic.split(":")[0] == "type":
                     _, topic, cam_id = topic.split(":")
+                    print(self.register_topic)
                     rid = self.register_topic[topic]
                     buf = self.register[rid].receive(self.receive_socket)[:]
                     self.register_lock[rid].acquire()

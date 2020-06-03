@@ -19,12 +19,14 @@ if __name__ == "__main__":
     if GV.UseOpenpose:
         ROP = OpenPoseListener("OpenPose")
         visualizer.add(ROP)
-    if GV.UseFaceRecognition:
+    if GV.UsePosition:
         RPD = PositionDisplayListener("Position")
         visualizer.add(RPD)
+
     if GV.UseDepthCamera:
         LQ = LocationQuerier(GV.manager, "PSI_Python_AnswerKinect", "Python_PSI_QueryKinect")
         GV.LocationQuerier = LQ
+
     visualizer.start()
 
     # Block the main process.

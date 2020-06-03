@@ -15,7 +15,7 @@ class BaseRemoteListener(metaclass=abc.ABCMeta):
         self.topic = topic
 
     @staticmethod
-    def receive_properties(socket:BaseTCPSocket)->dict:
+    def receive_properties(socket: BaseTCPSocket) -> dict:
         prop_dict = dict()
         prop_str = socket.recv_str()
         while prop_str != "END":
@@ -29,6 +29,7 @@ class BaseRemoteListener(metaclass=abc.ABCMeta):
                 elif prop_type == "float":
                     prop_dict[prop_name] = float(prop_content)
             prop_str = socket.recv_str()
+            print(prop_str)
         return prop_dict
 
     @abc.abstractmethod
@@ -99,6 +100,7 @@ class PositionDisplayListener(BaseRemoteListener):
         super(PositionDisplayListener, self).__init__(topic)
 
     def receive(self, socket: DTC):
+        logging("In position display listener... receiving")
         prop_dict = self.receive_properties(socket)
         pos_num = socket.recv_int()
         print("%d position(s) to receive." % pos_num)
@@ -112,17 +114,22 @@ class PositionDisplayListener(BaseRemoteListener):
             x = socket.recv_float()
             y = socket.recv_float()
             z = socket.recv_float()
-            raw_info.append((x0, y0, x, y, z))
-        for i, (x0, y0, x, y, z) in enumerate(raw_info):
+            c = socket.recv_str()
+            raw_info.append((x0, y0, x, y, z, c))
+            print(f"received person {i}, location: ({x0}, {y0})")
+        for i, (x0, y0, x, y, z, c) in enumerate(raw_info):
             if GV.UseDepthCamera:
-                result = GV.LocationQuerier.query(prop_dict["timestamp"], Point2D(x0, y0))
+                result = GV.LocationQuerier.query(None, prop_dict["timestamp"], Point2D(x0, y0))
                 # TODO:[URGENT!] camera coordination transformation
                 # result = camera[cid].camera_to_real
-                person.append((result.x, result.y, result.z))
+                if p_is_zero(result):
+                    person.append((x, y, z))
+                else:
+                    person.append((result.x, result.y, result.z))
+                to_send += f";person_{c}&{result.x}:{result.y}:{result.z}"
             else:
                 person.append((x, y, z))
-
-            to_send += f";{x}:{y}:{z}"
+                to_send += f";person_{c}&{x}:{y}:{z}"
         logging(to_send)
         self.update_layout_image(GV.CornerPosition, person)
         GV.manager.send("Python_PSI_Location", to_send)

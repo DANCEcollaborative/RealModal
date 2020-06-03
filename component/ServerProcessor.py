@@ -10,7 +10,9 @@ from Socket.BaseSocket import BaseTCPSocket
 from utils.FaceRecognitionUtil import FaceRecognitionUtil as FRU
 from utils.OpenPoseUtil import OpenPoseUtil as OPU
 from utils.PositionCalcUtil import *
+from utils.ColorUtil import get_color_name
 
+import numpy as np
 
 class BaseImageProcessor(metaclass=abc.ABCMeta):
     def __init__(self, topic=None):
@@ -152,6 +154,7 @@ class PositionProcessor(BaseImageProcessor):
 
     def process_openpose(self, info):
         # TODO: add position recognition when using a single camera.
+        # TODO: [URGENT!!] here, the info and GV.OpenPoseResult might not point to a same image.
         camera_ids = list(GV.CameraMapping.keys())
         # check whether face recognition is enabled
         if not GV.UseOpenpose:
@@ -187,9 +190,15 @@ class PositionProcessor(BaseImageProcessor):
                 else:
                     continue
                 x0, y0, _ = points[use_index]
+                h, w = info['img'].shape[:2]
+                cropped_area = info['img'][y0-5:y0+5, x0-5:x0+5]
+                cropped_color = np.mean(cropped_area, (0, 1))
+                cloth_color = get_color_name(cropped_color)
+                x0 = float(x0) / w
+                y0 = float(y0) / h
                 line_center = GV.CameraMapping[camera_ids[0]](Point2D(x0, y0))
                 p_center = line_center.find_point_by_z(GV.SingleCameraDistance)
-                self.positions.append((Point2D(x0, y0), p_center.to_vec()))
+                self.positions.append((Point2D(x0, y0), p_center.to_vec(), cloth_color))
         else:
             # Determine which body key point is used to calculate positions
             num_nose = 0
@@ -231,10 +240,11 @@ class PositionProcessor(BaseImageProcessor):
         l = len(self.positions)
         print("find %d person(s) in the space" % l)
         soc.send_int(l)
-        for i, (p, (x, y, z)) in enumerate(self.positions):
+        for i, (p, (x, y, z), c) in enumerate(self.positions):
             print("sending person %d" % i)
             soc.send_float(p.x)
             soc.send_float(p.y)
             soc.send_float(x)
             soc.send_float(y)
             soc.send_float(z)
+            soc.send_str(c)
