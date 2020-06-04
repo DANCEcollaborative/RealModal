@@ -16,6 +16,9 @@ COLOR_RANGE = {
 def bgr2hsv(b: float or tuple, g: float = None, r: float = None):
     if g is None:
         b, g, r = b
+    b /= 255.
+    g /= 255.
+    r /= 255.
     bgr_max = float(max(b, g, r))
     bgr_min = float(min(b, g, r))
     v = bgr_max
@@ -35,7 +38,7 @@ def bgr2hsv(b: float or tuple, g: float = None, r: float = None):
         assert False, "Your computer is broken."
     if h < 0:
         h = h + 360
-    assert 0 <= v <= 1 and 0 <= s <= 1 and 0 <= h <= 360
+    assert 0 <= v <= 1 and 0 <= s <= 1 and 0 <= h <= 360, f"Conversion Error happens for ({b}, {g}, {r}) -> ({h}, {s}, {v})"
     h = h / 2
     s = s * 255
     v = v * 255

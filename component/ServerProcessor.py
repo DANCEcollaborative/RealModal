@@ -103,18 +103,19 @@ class OpenPoseProcessor(BaseImageProcessor):
 class PositionProcessor(BaseImageProcessor):
     def __init__(self, backend="Openpose", topic=None):
         super(PositionProcessor, self).__init__(topic)
+
         self.backendNotFound = False
         self.timestamp = None
         self.positions = []
-        if backend not in ["Openpose", "FaceRecognition"]:
+        if backend.lower() not in ["openpose", "facerecognition"]:
             raise ValueError("Undefined backend.")
-        self.backend = backend
+        self.backend = backend.lower()
 
     def process(self, info):
         self.timestamp = info["timestamp"]
-        if self.backend == "Openpose":
+        if self.backend == "openpose":
             self.process_openpose(info)
-        elif self.backend == "FaceRecognition":
+        elif self.backend == "facerecognition":
             self.process_face_rec(info)
 
     def process_face_rec(self, info):
@@ -180,6 +181,8 @@ class PositionProcessor(BaseImageProcessor):
         if len(camera_ids) == 1:
             self.positions = []
             cid = camera_ids[0]
+            if len(keypoints[cid].shape) < 3:
+                return
             for i, points in enumerate(keypoints[cid]):
                 if not is_zero(points[neck_index]):
                     use_index = neck_index
@@ -191,7 +194,7 @@ class PositionProcessor(BaseImageProcessor):
                     continue
                 x0, y0, _ = points[use_index]
                 h, w = info['img'].shape[:2]
-                cropped_area = info['img'][y0-5:y0+5, x0-5:x0+5]
+                cropped_area = info['img'][int(y0)-5:int(y0)+5, int(x0)-5:int(x0)+5]
                 cropped_color = np.mean(cropped_area, (0, 1))
                 cloth_color = get_color_name(cropped_color)
                 x0 = float(x0) / w
