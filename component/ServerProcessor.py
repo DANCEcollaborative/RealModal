@@ -22,7 +22,10 @@ class BaseImageProcessor(metaclass=abc.ABCMeta):
 
     def base_send(self, soc: BaseTCPSocket):
         soc.send_str(f"type:{self.topic}:{self.current['camera_id']}")
-        self.send(soc)
+        try:
+            self.send(soc)
+        except Exception as e:
+            print(e)
 
     @abc.abstractmethod
     def send(self, soc: BaseTCPSocket):
@@ -30,8 +33,12 @@ class BaseImageProcessor(metaclass=abc.ABCMeta):
 
     def base_process(self, info, handler, pos):
         self.current = info.copy()
-        self.process(info)
-        handler.processer_state[pos] = "Pending"
+        try:
+            self.process(info)
+            handler.processer_state[pos] = "Pending"
+        except Exception as e:
+            print(e)
+            handler.processer_state[pos] = "Available"
 
     @abc.abstractmethod
     def process(self, info):

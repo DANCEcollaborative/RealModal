@@ -117,6 +117,8 @@ class ImageHandler(DataTransmissionHandler):
         while not self.event.is_set():
             try:
                 img = self.recv_img()
+                if img is None:
+                    continue
                 logging("Received Image:")
                 temp = self.recv_str()
                 logging(temp)
