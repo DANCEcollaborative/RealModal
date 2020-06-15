@@ -119,7 +119,8 @@ class ImageHandler(DataTransmissionHandler):
                 img = self.recv_img()
                 if img is None:
                     continue
-                logging("Received Image:")
+                logging(f"Received Image: shape: {img.shape}")
+
                 temp = self.recv_str()
                 logging(temp)
                 info = dict()
