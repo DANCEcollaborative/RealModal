@@ -1,4 +1,4 @@
-from utils.Camera import WebcamMapping
+from utils.Camera import *
 from utils.PositionCalcUtil import Point3D, Point2D, Line3D
 
 
@@ -71,15 +71,30 @@ class GlobalVariables():
     #        "webcam": Point3D(0, 0, 1)
     #    }
 
-    # Pixel-World mapping function for every camera.
-    CameraMapping = {
-        "webcam": WebcamMapping(
+    CameraList = {
+        "webcam": WebCamera(
             pos_camera=Point3D(0, 0, 0),
             dir_camera=Point3D(0, 0, 1),
             dir_x=Point3D(1, 0, 0),
             theta=0.684644277715545,
             whratio=16. / 9
-        )
+        ),
+        "Kinect": WebCamera(
+            pos_camera=Point3D(0, 0, 0),
+            dir_camera=Point3D(0, 0, 1),
+            dir_x=Point3D(1, 0, 0),
+            theta=0.684644277715545,
+            whratio=16. / 9
+        ),
+    }
+
+    # Pixel-World mapping function for every camera.
+    CameraImageMapping = {
+        key: CameraList[key].image_mapping for key in CameraList
+    }
+
+    CameraWorldMapping = {
+        key: CameraList[key].world_mapping for key in CameraList
     }
 
     # When using one camera only, the default distance to the camera

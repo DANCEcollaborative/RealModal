@@ -14,6 +14,7 @@ from utils.ColorUtil import get_color_name
 
 import numpy as np
 
+
 class BaseImageProcessor(metaclass=abc.ABCMeta):
     def __init__(self, topic=None):
         # TODO: auto synchronize the topic(may not be possible)
@@ -126,7 +127,7 @@ class PositionProcessor(BaseImageProcessor):
             self.process_face_rec(info)
 
     def process_face_rec(self, info):
-        camera_ids = list(GV.CameraMapping.keys())
+        camera_ids = list(GV.CameraImageMapping.keys())
         # check whether face recognition is enabled
         if not GV.UseFaceRecognition:
             if not self.backendNotFound:
@@ -153,7 +154,7 @@ class PositionProcessor(BaseImageProcessor):
                 h, w = info['img'].shape[:2]
                 x0 = float(x0) / w
                 y0 = float(y0) / h
-                line_center = GV.CameraMapping[camera_ids[0]](Point2D(x0, y0))
+                line_center = GV.CameraImageMapping[camera_ids[0]](Point2D(x0, y0))
                 p_center = line_center.find_point_by_z(GV.SingleCameraDistance)
                 self.positions.append((Point2D(x0, y0), p_center.to_vec()))
         else:
@@ -161,9 +162,8 @@ class PositionProcessor(BaseImageProcessor):
             pass
 
     def process_openpose(self, info):
-        # TODO: add position recognition when using a single camera.
         # TODO: [URGENT!!] here, the info and GV.OpenPoseResult might not point to a same image.
-        camera_ids = list(GV.CameraMapping.keys())
+        camera_ids = list(GV.CameraImageMapping.keys())
         # check whether face recognition is enabled
         if not GV.UseOpenpose:
             if not self.backendNotFound:
@@ -206,9 +206,9 @@ class PositionProcessor(BaseImageProcessor):
                 cloth_color = get_color_name(cropped_color)
                 x0 = float(x0) / w
                 y0 = float(y0) / h
-                line_center = GV.CameraMapping[camera_ids[0]](Point2D(x0, y0))
+                line_center = GV.CameraImageMapping[camera_ids[0]](Point2D(x0, y0))
                 p_center = line_center.find_point_by_z(GV.SingleCameraDistance)
-                self.positions.append((Point2D(x0, y0), p_center.to_vec(), cloth_color))
+                self.positions.append((Point2D(x0, y0), GV.CameraWorldMapping[cid](p_center).to_vec(), cloth_color))
         else:
             # Determine which body key point is used to calculate positions
             num_nose = 0
@@ -234,12 +234,12 @@ class PositionProcessor(BaseImageProcessor):
             start_point = []
             direction = []
             for cid in camera_ids:
-                start_point.append(GV.CameraPosition[cid])
+                start_point.append(GV.CameraList[cid].pos_camera)
                 direction.append([])
                 for points in keypoints[cid]:
                     keypoint = points[use_index]
                     if not is_zero(keypoint):
-                        direction[-1].append(GV.CameraMapping[cid](keypoint[0], keypoint[1]))
+                        direction[-1].append(GV.CameraImageMapping[cid](Point2D(keypoint[0], keypoint[1])))
 
             # Calculate position
             self.positions = calc_position(start_point, direction)

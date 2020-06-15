@@ -120,7 +120,6 @@ class PositionDisplayListener(BaseRemoteListener):
         for i, (x0, y0, x, y, z, c) in enumerate(raw_info):
             if GV.UseDepthCamera:
                 result = GV.LocationQuerier.query(None, prop_dict["timestamp"], Point2D(x0, y0))
-                # TODO:[URGENT!] camera coordination transformation
                 # result = camera[cid].camera_to_real
                 if p_is_zero(result):
                     person.append((x, y, z))
