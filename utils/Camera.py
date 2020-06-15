@@ -55,7 +55,7 @@ class WebCamera(CameraBase):
         if whratio is None:
             num_none += 1
         assert num_none < 2, "At least two of theta, phi, whratio should be provided for a webcam."
-        assert pp_dot(dir_camera, dir_x) < 1e-10, "dot(dir_camera, dir_x) != 0."
+        assert pp_dot(dir_camera, dir_x) < 1e-4, "dot(dir_camera, dir_x) != 0."
         dir_x = dir_x.normalize()
         dir_z = dir_camera.normalize()
         super(WebCamera, self).__init__(pos_camera, dir_z, dir_x, theta, phi, whratio)
