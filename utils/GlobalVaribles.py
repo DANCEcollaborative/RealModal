@@ -52,13 +52,13 @@ class GlobalVariables():
     PositionBackend = "OpenPose"
 
     # Whether to use data from depth camera to get people location.
-    UseDepthCamera = True
+    UseDepthCamera = False
 
     # The ip address to establish sockets between clients and server.
-    server_addr_in = ("128.2.204.127", 5416)
-    server_addr_out = ("128.2.204.127", 5417)
-    client_addr_in = ("brandy.lti.cs.cmu.edu", 5417)
-    client_addr_out = ("brandy.lti.cs.cmu.edu", 5416)
+    server_addr_in = ("128.2.204.127", 6416)
+    server_addr_out = ("128.2.204.127", 6417)
+    client_addr_in = ("brandy.lti.cs.cmu.edu", 6417)
+    client_addr_out = ("brandy.lti.cs.cmu.edu", 6416)
 
     """
     Camera information:
