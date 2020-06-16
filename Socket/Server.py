@@ -119,7 +119,7 @@ class ImageHandler(DataTransmissionHandler):
                 img = self.recv_img()
                 if img is None:
                     continue
-                logging("Received Image:")
+                logging("Received Image:", img.shape)
                 temp = self.recv_str()
                 logging(temp)
                 info = dict()
@@ -158,10 +158,15 @@ class ImageHandler(DataTransmissionHandler):
             for i, stat in enumerate(self.processer_state):
                 if stat == "Pending":
                     try:
+                        lock_flag = False
                         if self.send_lock.acquire(blocking=False):
+                            lock_flag = True
                             self.processer[i].base_send(self.send_socket)
                             self.processer_state[i] = "Available"
-                            self.send_lock.release()
                     except Exception as e:
+                        self.send_socket.restart()
                         print(e)
-                        raise e
+                    finally:
+                        if lock_flag:
+                            self.send_lock.release()
+                            self.processer_state[i] = "Available"
