@@ -11,7 +11,7 @@ class GlobalVariables():
 
     """
     Debugging mode will output more log.
-    Using logging() instead of print() to get debugging time log. 
+    Using logging() instead of print() to get debugging time log.
     """
     debug = True
 
@@ -55,10 +55,10 @@ class GlobalVariables():
     UseDepthCamera = False
 
     # The ip address to establish sockets between clients and server.
-    server_addr_in = ("128.2.204.127", 6416)
-    server_addr_out = ("128.2.204.127", 6417)
-    client_addr_in = ("brandy.lti.cs.cmu.edu", 6417)
-    client_addr_out = ("brandy.lti.cs.cmu.edu", 6416)
+    server_addr_in = ("128.2.204.127", 7416)
+    server_addr_out = ("128.2.204.127", 7417)
+    client_addr_in = ("brandy.lti.cs.cmu.edu", 7417)
+    client_addr_out = ("brandy.lti.cs.cmu.edu", 7416)
 
     """
     Camera information:
@@ -105,7 +105,7 @@ class GlobalVariables():
     ]
 
     """
-    Display size: define the position display size. 
+    Display size: define the position display size.
     """
     display_size = (500, 500)
     display_margin = 50

@@ -156,13 +156,13 @@ class ImageHandler(DataTransmissionHandler):
             self.send_socket.restart()
         while not self.event.is_set():
             for i, stat in enumerate(self.processer_state):
+#                logging(i, stat)
                 if stat == "Pending":
                     try:
                         lock_flag = False
                         if self.send_lock.acquire(blocking=False):
                             lock_flag = True
                             self.processer[i].base_send(self.send_socket)
-                            self.processer_state[i] = "Available"
                     except Exception as e:
                         self.send_socket.restart()
                         print(e)
@@ -170,3 +170,4 @@ class ImageHandler(DataTransmissionHandler):
                         if lock_flag:
                             self.send_lock.release()
                             self.processer_state[i] = "Available"
+                    # self.send_socket.restart()
