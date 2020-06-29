@@ -83,6 +83,7 @@ class ImageReceiveHandler(DataTransmissionHandler):
         super().setup()
 
     def finish(self):
+        print("ImageReceiveHandler terminated a request from: ", self.client_address)
         super().finish()
 
     def handle(self):
@@ -90,6 +91,7 @@ class ImageReceiveHandler(DataTransmissionHandler):
         self.start()
 
     def start(self):
+        print("ImageReceiveHandler received a new request from: ", self.client_address)
         self.recv_process()
 
     def recv_process(self):
@@ -120,7 +122,7 @@ class ImageReceiveHandler(DataTransmissionHandler):
                     if stat == "Available":
                         GV.ProcessorState[i] = "Processing"
                         _thread.start_new_thread(GV.Processor[i].base_process, (info, i))
-            except (ConnectionResetError, ValueError) as e:
+            except (ConnectionResetError, ValueError, IOError) as e:
                 print("Connection terminated")
                 self.event.set()
                 break
@@ -135,6 +137,7 @@ class DataSendHandler(DataTransmissionHandler):
         self.send_lock = threading.Lock()
 
     def finish(self):
+        print("DataSendHandler terminated a request from: ", self.client_address)
         super().finish()
 
     def handle(self):
@@ -142,6 +145,7 @@ class DataSendHandler(DataTransmissionHandler):
         self.start()
 
     def start(self):
+        print("DataSendHandler received a new request from: ", self.client_address)
         self.send_process()
 
     def send_process(self):
@@ -152,8 +156,8 @@ class DataSendHandler(DataTransmissionHandler):
                     try:
                         if self.send_lock.acquire(blocking=False):
                             lock_flag = True
-                            GV.Processor[i].base_send(self.tcp_socket)
-                    except (ConnectionResetError, ValueError) as e:
+                            GV.Processor[i].base_send(self)
+                    except (ConnectionResetError, ValueError, IOError) as e:
                         print("Connection terminated")
                         self.event.set()
                         break
