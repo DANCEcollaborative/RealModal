@@ -18,6 +18,7 @@ import numpy as np
 def add_processor(processor):
     GV.Processor.append(processor)
     GV.ProcessorState.append("Available")
+    GV.ProcessorLock.append(threading.Lock())
 
 
 class BaseImageProcessor(metaclass=abc.ABCMeta):
@@ -37,14 +38,18 @@ class BaseImageProcessor(metaclass=abc.ABCMeta):
     def send(self, soc: BaseTCPSocket):
         pass
 
-    def base_process(self, info, pos):
-        self.current = info.copy()
-        try:
-            self.process(info)
-            GV.ProcessorState[pos] = "Pending"
-        except Exception as e:
-            print(e)
-            GV.ProcessorState[pos] = "Available"
+    def base_process(self, info, pos, ip_addr):
+        if GV.ProcessorLock[pos].acquire(blocking=False):
+            GV.ProcessorState[pos] = f"Processing:{ip_addr}"
+            self.current = info.copy()
+            try:
+                self.process(info)
+                GV.ProcessorState[pos] = f"Pending:{ip_addr}"
+            except Exception as e:
+                print(e)
+                GV.ProcessorState[pos] = "Available"
+            finally:
+                GV.ProcessorLock[pos].release()
 
     @abc.abstractmethod
     def process(self, info):

@@ -157,7 +157,7 @@ class PositionDisplayListener(BaseRemoteListener):
             else:
                 nx = int(mar + (x[0] - minx) * (dis_x - 2 * mar) / (maxx - minx))
                 ny = int(mar + (x[1] - miny) * (dis_y - 2 * mar) / (maxy - miny))
-            return  ny, nx
+            return ny, nx
 
         ret = np.ones((dis_x, dis_y, 3), dtype=np.uint8) * 240
         for i in range(len(corner)):

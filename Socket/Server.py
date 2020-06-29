@@ -120,8 +120,7 @@ class ImageReceiveHandler(DataTransmissionHandler):
 
                 for i, stat in enumerate(GV.ProcessorState):
                     if stat == "Available":
-                        GV.ProcessorState[i] = "Processing"
-                        _thread.start_new_thread(GV.Processor[i].base_process, (info, i))
+                        _thread.start_new_thread(GV.Processor[i].base_process, (info, i, self.client_address[0]))
             except (ConnectionResetError, ValueError, IOError) as e:
                 print("Connection terminated")
                 self.event.set()
@@ -151,7 +150,7 @@ class DataSendHandler(DataTransmissionHandler):
     def send_process(self):
         while not self.event.is_set():
             for i, stat in enumerate(GV.ProcessorState):
-                if stat == "Pending":
+                if stat == f"Pending:{self.client_address[0]}":
                     lock_flag = False
                     try:
                         if self.send_lock.acquire(blocking=False):
@@ -167,4 +166,3 @@ class DataSendHandler(DataTransmissionHandler):
                         if lock_flag:
                             self.send_lock.release()
                             GV.ProcessorState[i] = "Available"
-                    # self.send_socket.restart()

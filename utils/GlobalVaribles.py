@@ -31,6 +31,7 @@ class GlobalVariables():
     # Processors
     Processor = []
     ProcessorState = []
+    ProcessorLock = []
 
     # Recent results from different components.
     OpenPoseResult = dict()
