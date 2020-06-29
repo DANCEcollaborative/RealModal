@@ -37,14 +37,14 @@ class BaseImageProcessor(metaclass=abc.ABCMeta):
     def send(self, soc: BaseTCPSocket):
         pass
 
-    def base_process(self, info, handler, pos):
+    def base_process(self, info, pos):
         self.current = info.copy()
         try:
             self.process(info)
-            handler.processer_state[pos] = "Pending"
+            GV.ProcessorState[pos] = "Pending"
         except Exception as e:
             print(e)
-            handler.processer_state[pos] = "Available"
+            GV.ProcessorState[pos] = "Available"
 
     @abc.abstractmethod
     def process(self, info):

@@ -119,7 +119,7 @@ class ImageReceiveHandler(DataTransmissionHandler):
                 for i, stat in enumerate(GV.ProcessorState):
                     if stat == "Available":
                         GV.ProcessorState[i] = "Processing"
-                        _thread.start_new_thread(GV.Processor[i].base_process, (info, self, i))
+                        _thread.start_new_thread(GV.Processor[i].base_process, (info, i))
             except (ConnectionResetError, ValueError) as e:
                 print("Connection terminated")
                 self.event.set()
