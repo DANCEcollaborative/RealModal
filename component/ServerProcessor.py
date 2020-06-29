@@ -15,6 +15,11 @@ from utils.ColorUtil import get_color_name
 import numpy as np
 
 
+def add_processor(processor):
+    GV.Processor.append(processor)
+    GV.ProcessorState.append("Available")
+
+
 class BaseImageProcessor(metaclass=abc.ABCMeta):
     def __init__(self, topic=None):
         # TODO: auto synchronize the topic(may not be possible)

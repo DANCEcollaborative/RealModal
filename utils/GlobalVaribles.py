@@ -28,6 +28,10 @@ class GlobalVariables():
     fru = None  # face recognition utility
     opu = None  # Openpose utility
 
+    # Processors
+    Processor = []
+    ProcessorState = []
+
     # Recent results from different components.
     OpenPoseResult = dict()
     FaceRecognitionResult = dict()

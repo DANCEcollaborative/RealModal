@@ -78,39 +78,18 @@ class SimpleTCPServer(BaseTCPSocket):
         self.start()
 
 
-class ImageHandler(DataTransmissionHandler):
+class ImageReceiveHandler(DataTransmissionHandler):
     def setup(self):
         super().setup()
-        self.processer = []
-        self.processer_state = []
-        self.send_lock = threading.Lock()
-        self.property = dict()
-        self.send_socket = GV.send_server
-
-        if GV.UseFaceRecognition:
-            self.add_processor(FaceRecognitionProcessor("FaceRecognition"))
-        if GV.UseOpenpose:
-            self.add_processor(OpenPoseProcessor("OpenPose"))
-        if GV.UsePosition:
-            self.add_processor(PositionProcessor(GV.PositionBackend, "Position"))
 
     def finish(self):
-        try:
-            self.send_socket.stop()
-        except:
-            pass
         super().finish()
 
     def handle(self):
         super().handle()
         self.start()
 
-    def add_processor(self, processor):
-        self.processer.append(processor)
-        self.processer_state.append("Available")
-
     def start(self):
-        _thread.start_new_thread(self.send_process, ())
         self.recv_process()
 
     def recv_process(self):
@@ -137,10 +116,10 @@ class ImageHandler(DataTransmissionHandler):
                     temp = self.recv_str()
                     logging(temp)
 
-                for i, stat in enumerate(self.processer_state):
+                for i, stat in enumerate(GV.ProcessorState):
                     if stat == "Available":
-                        self.processer_state[i] = "Processing"
-                        _thread.start_new_thread(self.processer[i].base_process, (info, self, i))
+                        GV.ProcessorState[i] = "Processing"
+                        _thread.start_new_thread(GV.Processor[i].base_process, (info, self, i))
             except (ConnectionResetError, ValueError) as e:
                 print("Connection terminated")
                 self.event.set()
@@ -149,25 +128,39 @@ class ImageHandler(DataTransmissionHandler):
                 print(e)
                 continue
 
+
+class DataSendHandler(DataTransmissionHandler):
+    def setup(self):
+        super().setup()
+        self.send_lock = threading.Lock()
+
+    def finish(self):
+        super().finish()
+
+    def handle(self):
+        super().handle()
+        self.start()
+
+    def start(self):
+        self.send_process()
+
     def send_process(self):
-        try:
-            self.send_socket.start()
-        except OSError as e:
-            self.send_socket.restart()
         while not self.event.is_set():
-            for i, stat in enumerate(self.processer_state):
-#                logging(i, stat)
+            for i, stat in enumerate(GV.ProcessorState):
                 if stat == "Pending":
+                    lock_flag = False
                     try:
-                        lock_flag = False
                         if self.send_lock.acquire(blocking=False):
                             lock_flag = True
-                            self.processer[i].base_send(self.send_socket)
+                            GV.Processor[i].base_send(self.tcp_socket)
+                    except (ConnectionResetError, ValueError) as e:
+                        print("Connection terminated")
+                        self.event.set()
+                        break
                     except Exception as e:
-                        self.send_socket.restart()
                         print(e)
                     finally:
                         if lock_flag:
                             self.send_lock.release()
-                            self.processer_state[i] = "Available"
+                            GV.ProcessorState[i] = "Available"
                     # self.send_socket.restart()
