@@ -211,12 +211,17 @@ class PositionProcessor(BaseImageProcessor):
                     continue
                 x0, y0, _ = points[use_index]
                 h, w = info['img'].shape[:2]
-                cropped_area = info['img'][int(y0)+5:int(y0)+15, int(x0)-5:int(x0)+5]
-                if sum(cropped_area.shape) > 0:
-                    cropped_color = np.mean(cropped_area, (0, 1))
-                    cloth_color = get_color_name(cropped_color)
-                else:
+
+                # clothes color detection
+                if is_zero(points[neck_index]):
                     cloth_color = "Unknown"
+                else:
+                    cropped_area = info['img'][int(y0)+5:int(y0)+15, int(x0)-5:int(x0)+5]
+                    if sum(cropped_area.shape) > 0:
+                        cropped_color = np.mean(cropped_area, (0, 1))
+                        cloth_color = get_color_name(cropped_color)
+                    else:
+                        cloth_color = "Unknown"
                 x0 = float(x0) / w
                 y0 = float(y0) / h
                 line_center = GV.CameraList[camera_ids[0]].image_mapping(Point2D(x0, y0))
