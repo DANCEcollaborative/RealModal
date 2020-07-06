@@ -212,13 +212,18 @@ class PositionProcessor(BaseImageProcessor):
                 x0, y0, _ = points[use_index]
                 h, w = info['img'].shape[:2]
                 cropped_area = info['img'][int(y0)+5:int(y0)+15, int(x0)-5:int(x0)+5]
-                cropped_color = np.mean(cropped_area, (0, 1))
-                cloth_color = get_color_name(cropped_color)
+                if sum(cropped_area.shape) > 0:
+                    cropped_color = np.mean(cropped_area, (0, 1))
+                    cloth_color = get_color_name(cropped_color)
+                else:
+                    cloth_color = "Unknown"
                 x0 = float(x0) / w
                 y0 = float(y0) / h
                 line_center = GV.CameraList[camera_ids[0]].image_mapping(Point2D(x0, y0))
                 p_center = line_center.find_point_by_z(GV.SingleCameraDistance)
-                self.positions.append((Point2D(x0, y0), GV.CameraList[cid].world_mapping(p_center).to_vec(), cloth_color))
+                self.positions.append(
+                    (Point2D(x0, y0), GV.CameraList[cid].world_mapping(p_center).to_vec(), cloth_color)
+                )
         else:
             # Determine which body key point is used to calculate positions
             num_nose = 0
