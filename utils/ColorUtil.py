@@ -1,3 +1,5 @@
+import math
+
 COLOR_RANGE = {
     'Black': [((0, 0, 0), (180, 255, 46))],
     'Gray': [((0, 0, 46), (180, 43, 220))],
@@ -13,9 +15,7 @@ COLOR_RANGE = {
 }
 
 
-def bgr2hsv(b: float or tuple, g: float = None, r: float = None):
-    if g is None:
-        b, g, r = b
+def bgr2hsv(b: float, g: float, r: float):
     b /= 255.
     g /= 255.
     r /= 255.
@@ -52,6 +52,10 @@ def bgr2hsv(b: float or tuple, g: float = None, r: float = None):
 
 
 def get_color_name(b: float or tuple, g: float = None, r: float = None):
+    if g is None:
+        b, g, r = b
+    if math.isnan(b) or math.isnan(g) or math.isnan(r):
+        return "Unknown"
     h, s, v = bgr2hsv(b, g, r)
     return get_color_name_by_hsv(h, s, v)
 
