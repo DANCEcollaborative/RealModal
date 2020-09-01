@@ -4,6 +4,7 @@ from communication.CommunicationManager import CommunicationManager as CM
 from component.ForwardListener import ForwardVisualizer
 from component.LocationListener import LocationQuerier
 from component.RemoteListener import FaceRecognitionListener, OpenPoseListener, PositionDisplayListener
+from component.DialogListener import DialogListener
 
 import time
 
@@ -29,8 +30,11 @@ if __name__ == "__main__":
 
     visualizer.start()
 
+    # DL = DialogListener(GV.manager, "PSI_Bazaar_Text", "Python_PSI_Text", **GV.DialogAgentInfo)
+
     # Block the main process.
     while not GV.ended:
+        time.sleep(2)
         pass
 
     exit(0)
