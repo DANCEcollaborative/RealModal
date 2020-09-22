@@ -1,4 +1,4 @@
-from utils.GlobalVaribles import GlobalVariables as GV
+from utils.GlobalVariables import GlobalVariables as GV
 
 import _thread
 import abc
@@ -17,8 +17,7 @@ class BaseListener(metaclass=abc.ABCMeta):
     """
     def __init__(self, cm: CM):
         """
-            Initialization of a l
-            istener.
+            Initialization of a listener.
         :param cm: CommunicationManager
             Communication manager you're using.
         """
@@ -264,7 +263,16 @@ class ImageListener(BaseListener, metaclass=abc.ABCMeta):
 
 
 class TextListener(BaseListener, metaclass=abc.ABCMeta):
+    """
+        The class to handle text message only.
+        This class is the base class of all the listeners which specifically listen to the text messages.
+    """
     def __init__(self, cm, topic=None):
+        """
+        Initialization for a text listener.
+        :param cm: The communication manager used to receive and send stomp messages
+        :param topic: The topic used for receiving stomp messages
+        """
         super(TextListener, self).__init__(cm)
         self.receiveLock = threading.Lock()
         self.topic = topic

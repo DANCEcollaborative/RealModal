@@ -1,5 +1,5 @@
 from communication.BaseListener import TextListener
-from utils.GlobalVaribles import GlobalVariables as GV
+from utils.GlobalVariables import GlobalVariables as GV
 from DialogAgents import agent_build_helper
 
 

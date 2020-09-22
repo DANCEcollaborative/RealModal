@@ -1,5 +1,5 @@
 from communication.BaseListener import ImageListener
-from utils.GlobalVaribles import GlobalVariables as GV
+from utils.GlobalVariables import GlobalVariables as GV
 
 import _thread
 import abc

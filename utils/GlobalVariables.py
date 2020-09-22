@@ -29,9 +29,10 @@ class GlobalVariables():
     opu = None  # Openpose utility
 
     # Processors
-    Processor = []
-    ProcessorState = []
-    ProcessorLock = []
+    Processor = []  # store the instances used for processing images
+    ProcessorState = []  # store the states of the instances.
+                         # values can be "Available", "Processing:{ip}" and "Pending:{ip}"
+    ProcessorLock = []  # store possible locks used in processors
 
     # Recent results from different components.
     OpenPoseResult = dict()
