@@ -1,16 +1,19 @@
-from communication.BaseListener import TextListener
-from utils.GlobalVariables import GlobalVariables as GV
+from components.stomp.BaseMessenger import TextMessenger
+from common.GlobalVariables import GV
 from DialogAgents import agent_build_helper
 
 
-class DialogListener(TextListener):
-    def __init__(self, cm=None, topic_in=None, topic_out=None, *args, **kwargs):
-        if cm is None:
-            cm = GV.manager
-        super(DialogListener, self).__init__(cm, topic_in)
-        self.topic_out = topic_out
-        kwargs["Listener"] = self
-        self.agent = agent_build_helper(*args, **kwargs)
+@GV.register_messenger("dialog_messenger")
+# TODO: add supports for Dialog agents
+class DialogMessenger(TextMessenger):
+    def __init__(self, config):
+        config.topic = config.topic_in
+        super(DialogMessenger, self).__init__(config)
+        self.topic_out = self.config.topic_out
+        if not self.config.active:
+            return
+        self.config.kwargs["Listener"] = self
+        # self.agent = agent_build_helper(*args, **kwargs)
 
     def process_text(self, text):
         print(text)

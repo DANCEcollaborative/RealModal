@@ -1,6 +1,6 @@
-from utils.GlobalVariables import GlobalVariables as GV
+from common.GlobalVariables import GlobalVariables as GV
 
-
+# TODO: change the logging module to official logging module
 def logging(*args, **kwargs):
     """
     A logging helper function, *arg, **kwargs are directly using by print().

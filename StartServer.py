@@ -1,7 +1,7 @@
 from Socket.Server import *
 from utils.FaceRecognitionUtil import FaceRecognitionUtil as FRU
 from utils.OpenPoseUtil import OpenPoseUtil as OPU
-from component.ServerProcessor import *
+from components.server import *
 
 if __name__ == "__main__":
     # Initialize modules:

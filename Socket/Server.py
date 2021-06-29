@@ -1,4 +1,4 @@
-from utils.GlobalVariables import GlobalVariables as GV
+from common.GlobalVariables import GlobalVariables as GV
 
 import threading
 import _thread
@@ -6,8 +6,6 @@ from socketserver import ThreadingTCPServer, BaseRequestHandler
 from socket import socket, AF_INET, SOCK_STREAM
 from Socket.BaseSocket import BaseTCPSocket
 
-from component.ServerProcessor import \
-    BaseImageProcessor, FaceRecognitionProcessor, OpenPoseProcessor, PositionProcessor
 
 from utils.LoggingUtil import logging
 
@@ -97,7 +95,7 @@ class DataTransmissionHandler(BaseRequestHandler, BaseTCPSocket):
     """
     Define a basic handler which aims to send and receive data from clients.
     Different from SimpleTCPServer, it:
-    1. must be used as a component of the Server class.
+    1. must be used as a components of the Server class.
     2. will try to find an available port to create a new socket. This port cannot be defined in advance.
     Refer to BaseRequestHandler for more details.
     """
