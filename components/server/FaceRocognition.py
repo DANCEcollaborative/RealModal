@@ -1,28 +1,38 @@
 from common.GlobalVariables import GV
 from components.server.ServerProcessor import BaseImageProcessor
-import threading
-
+from utils.FaceRecognitionUtil import FaceRecognitionUtil as FRU
 from Socket.BaseSocket import BaseTCPSocket
+
+import threading
 
 
 @GV.register_processor("face_recognition")
 class FaceRecognitionProcessor(BaseImageProcessor):
-    def __init__(self, topic=None):
-        super(FaceRecognitionProcessor, self).__init__(topic)
-        assert GV.fru is not None, "Face Recognizer should be initialized before using!"
-        self.recognizer = GV.fru
+    def __init__(self, config):
+        super(FaceRecognitionProcessor, self).__init__(config)
+        self.recognizer = GV.get("util.face_recognition")
+        assert self.recognizer is not None, \
+            "Face Recognizer should be initialized before using!"
         self.face_id = []
         self.face_loc = []
-        GV.locks["FaceRecognition"] = threading.Lock()
+
+    @classmethod
+    def initialize(cls, config):
+        if GV.get("util.face_recognition", None) is None:
+            GV.register("util.face_recognition", FRU())
+            GV.register("lock.face_recognition", threading.Lock())
 
     def process(self, info):
         img = info['img']
         if img.shape[-1] == 4:
             img = img[:, :, :3]
         self.face_id, self.face_loc = self.recognizer.recognize(img)
-        GV.locks["FaceRecognition"].acquire()
-        GV.FaceRecognitionResult[info['camera_id']] = (self.face_id, self.face_loc)
-        GV.locks["FaceRecognition"].release()
+        GV.get("lock.face_recognition").acquire()
+        GV.register(
+            f"result.face_recognition.{info['camera_id']}",
+            (self.face_id, self.face_loc)
+        )
+        GV.get("lock.face_recognition").release()
 
     def send(self, soc: BaseTCPSocket):
         l = len(self.face_id)

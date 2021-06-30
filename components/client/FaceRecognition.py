@@ -3,7 +3,7 @@ from components.client.RemoteListener import BaseRemoteListener
 import cv2
 
 from Socket.Client import DataTransmissionClient as DTC
-from utils.LoggingUtil import logging
+from common.Logging import logging
 
 
 @GV.register_listener("face_recognition")

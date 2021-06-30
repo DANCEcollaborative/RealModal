@@ -1,5 +1,5 @@
 from DialogAgents.BaseAgent import BaseAgent
-from utils.LoggingUtil import logging
+from common.Logging import logging
 
 
 class FileReaderAgent(BaseAgent):

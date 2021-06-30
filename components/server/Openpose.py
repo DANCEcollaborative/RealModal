@@ -1,28 +1,38 @@
 from common.GlobalVariables import GV
 from components.server.ServerProcessor import BaseImageProcessor
-import threading
-
 from Socket.BaseSocket import BaseTCPSocket
+from utils.OpenPoseUtil import OpenPoseUtil as OPU
+
+import threading
 import base64
 
 
 @GV.register_processor("openpose")
 class OpenPoseProcessor(BaseImageProcessor):
-    def __init__(self, topic=None):
-        super(OpenPoseProcessor, self).__init__(topic)
-        assert GV.opu is not None, "OpenPose should be initialized before using!"
-        self.openpose = GV.opu
+    def __init__(self, config):
+        super(OpenPoseProcessor, self).__init__(config)
+        self.openpose = GV.get("util.openpose")
+        assert self.openpose is not None, \
+            "OpenPose should be initialized before using!"
         self.poseKeypoints = None
-        GV.locks["OpenPose"] = threading.Lock()
+
+    @classmethod
+    def initialize(cls, config):
+        if GV.get("util.openpose") is None:
+            GV.register("util.openpose", OPU())
+            GV.register("lock.openpose", threading.Lock())
 
     def process(self, info):
         img = info['img']
         if img.shape[-1] == 4:
             img = img[:, :, :3]
         self.poseKeypoints, _ = self.openpose.find_pose(img)
-        GV.locks["OpenPose"].acquire()
-        GV.OpenPoseResult[info['camera_id']] = self.poseKeypoints.copy()
-        GV.locks["OpenPose"].release()
+        GV.get("lock.openpose").acquire()
+        GV.register(
+            f"result.openpose.{info['camera_id']}",
+            self.poseKeypoints.copy()
+        )
+        GV.get("lock.openpose").release()
 
     def send(self, soc: BaseTCPSocket):
         if len(self.poseKeypoints.shape) == 3:

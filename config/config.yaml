@@ -3,7 +3,30 @@ config_name: test
 config_version: 0.1
 
 # Debugging mode will output more log.
-debug: True
+debug: False
+
+# The ip address to establish sockets between clients and server.
+address: &address
+  server: "128.2.204.127"
+  client: "brandy.lti.cs.cmu.edu"
+  port:
+    upstream: 5416
+    downstream: 5417
+
+component: &component
+  openpose:
+    topic: OpenPose
+    process_interval: 0.4
+  position:
+    topic: Position
+    backend: OpenPose
+    topic_to_psi: Python_PSI_Location
+    process_interval: 0.4
+    # When using one camera only, the default distance to the camera
+    single_camera_distance: 55.
+    # Display size: define the position display size.
+    display_size: [500, 500]
+    display_margin: 50
 
 
 # Define Messengers for client
@@ -13,24 +36,18 @@ debug: True
 client:
   forward_visualizer:
     # The ip address and the ports of the server
-    server_ip: "brandy.lti.cs.cmu.edu"
-    port:
-      upstream: 5416
-      downstream: 5417
+    address:
+      <<: *address
     # The topic used by ActiveMQ to receive message from PSI
     topic: PSI_Python_Image
     # Decide the format of images received from PSI
-    PSIImageFormat: jpg
+    psi_image_format: jpg
     # Which cameras are visualized in client end.
-    CameraToDisplay:
+    display_camera:
       - webcam
     # Which listeners are attached to the client.
     listeners:
-      openpose:
-        topic: OpenPose
-      position:
-        topic: Position
-        backend: OpenPose
+      <<: *component
   location_querier:
     topic_in: PSI_Python_AnswerKinect
     topic_out: Python_PSI_QueryKinect
@@ -42,51 +59,31 @@ client:
     url: "https://misty.lti.cs.cmu.edu/bazaar/login?roomName=diamondkatapsi&roomId=10010&id=1&username=yansen"
     GUI: True
 
-# Whether to use data from depth camera to get people location.
-UseDepthCamera: False
-
-# Which Dialog Agent is used to response
-DialogAgent:
-  active: False
-  agent_type: Solitaire
-  url: "https://misty.lti.cs.cmu.edu/bazaar/login?roomName=diamondkatapsi&roomId=10010&id=1&username=yansen"
-  GUI: True
-
-# The ip address to establish sockets between clients and server.
-# TODO: test whether it's possible to merge the server and client ip into one
-Address:
-  server: "128.2.204.127"
-  client: "brandy.lti.cs.cmu.edu"
-  port:
-    upstream: 5416
-    downstream: 5417
-
-# The frequency that the server processes a frame in order to prevent overflowing messages.
-FrameFrequency: 0.4
+# Define processors and handlers for server
+# You can add processors here, and you can change the type of the handler by modifying recv_server and send_server
+server:
+  address:
+    <<: *address
+  recv_server: image_receive
+  send_server: data_send
+  processors:
+    <<: *component
 
 
 # Camera information:
-Camera:
+camera:
   webcam:
-    type: web_camera
+    type: webcam
     pos_camera: [29.2, 12.7, 125.7]
     dir_camera: [357.1, 319.2, 19.08]
     dir_x: [-17.27, 19.26, 1.01284]
     theta: 0.684644277715545
     whratio: 1.777778 # 16. / 9
 
-# When using one camera only, the default distance to the camera
-SingleCameraDistance: 55.
-
 
 # Room information
-CornerPosition:
+room_corner:
   - [0, 0, 0]
   - [378.2, 0, 0]
   - [378.2, 416.7, 0]
   - [0, 284.5, 0]
-
-
-# Display size: define the position display size.
-display_size: [500, 500]
-display_margin: 50

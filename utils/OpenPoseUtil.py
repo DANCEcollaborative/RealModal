@@ -20,8 +20,6 @@ except ImportError as e:
 
 class OpenPoseUtil():
     def __init__(self):
-        # TODO:
-        # The model
         params = dict()
         params["model_folder"] = os.path.join(openpose_dir, "models")
 

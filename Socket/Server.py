@@ -1,4 +1,4 @@
-from common.GlobalVariables import GlobalVariables as GV
+from common.GlobalVariables import GV
 
 import threading
 import _thread
@@ -7,7 +7,7 @@ from socket import socket, AF_INET, SOCK_STREAM
 from Socket.BaseSocket import BaseTCPSocket
 
 
-from utils.LoggingUtil import logging
+from common.Logging import logging
 
 
 class Server():
@@ -91,6 +91,7 @@ class SimpleTCPServer(BaseTCPSocket):
         self.start()
 
 
+@GV.register_handler("data_transmission")
 class DataTransmissionHandler(BaseRequestHandler, BaseTCPSocket):
     """
     Define a basic handler which aims to send and receive data from clients.
@@ -113,6 +114,7 @@ class DataTransmissionHandler(BaseRequestHandler, BaseTCPSocket):
         super().handle()
 
 
+@GV.register_handler("image_receive")
 class ImageReceiveHandler(DataTransmissionHandler):
     """
     Define a handler which aims to receive image data from the local machine.
@@ -164,9 +166,12 @@ class ImageReceiveHandler(DataTransmissionHandler):
                     logging(temp)
 
                 # Check the processors. Feed data to free processors in another thread.
-                for i, stat in enumerate(GV.ProcessorState):
-                    if stat == "Available":
-                        _thread.start_new_thread(GV.Processor[i].base_process, (info, i, self.client_address[0]))
+                for i, state in enumerate(GV.get("processor.state")):
+                    if state == "Available":
+                        _thread.start_new_thread(
+                            GV.get("processor.entity")[i].base_process,
+                            (info, i, self.client_address[0])
+                        )
             except (ConnectionResetError, ValueError, IOError) as e:
                 print("Connection terminated")
                 self.event.set()
@@ -176,6 +181,7 @@ class ImageReceiveHandler(DataTransmissionHandler):
                 continue
 
 
+@GV.register_handler("data_send")
 class DataSendHandler(DataTransmissionHandler):
     """
     Define a handler which aims to send the processed results back to the local machine.
@@ -198,13 +204,13 @@ class DataSendHandler(DataTransmissionHandler):
 
     def send_process(self):
         while not self.event.is_set():
-            for i, stat in enumerate(GV.ProcessorState):
+            for i, stat in enumerate(GV.get("processor.state")):
                 if stat == f"Pending:{self.client_address[0]}":
                     lock_flag = False
                     try:
                         if self.send_lock.acquire(blocking=False):
                             lock_flag = True
-                            GV.Processor[i].base_send(self)
+                            GV.get("processor.entity")[i].base_send(self)
                     except (ConnectionResetError, ValueError, IOError) as e:
                         print("Connection terminated")
                         self.event.set()
@@ -214,4 +220,4 @@ class DataSendHandler(DataTransmissionHandler):
                     finally:
                         if lock_flag:
                             self.send_lock.release()
-                            GV.ProcessorState[i] = "Available"
+                            GV.get("processor.state")[i] = "Available"

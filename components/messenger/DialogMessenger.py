@@ -1,4 +1,4 @@
-from components.stomp.BaseMessenger import TextMessenger
+from components.messenger.BaseMessenger import TextMessenger
 from common.GlobalVariables import GV
 from DialogAgents import agent_build_helper
 
@@ -7,11 +7,11 @@ from DialogAgents import agent_build_helper
 # TODO: add supports for Dialog agents
 class DialogMessenger(TextMessenger):
     def __init__(self, config):
+        if not config.active:
+            return
         config.topic = config.topic_in
         super(DialogMessenger, self).__init__(config)
         self.topic_out = self.config.topic_out
-        if not self.config.active:
-            return
         self.config.kwargs["Listener"] = self
         # self.agent = agent_build_helper(*args, **kwargs)
 

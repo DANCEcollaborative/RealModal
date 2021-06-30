@@ -11,27 +11,30 @@ import numpy as np
 
 @GV.register_processor("position")
 class PositionProcessor(BaseImageProcessor):
-    def __init__(self, backend="Openpose", topic=None):
-        super(PositionProcessor, self).__init__(topic)
+    def __init__(self, config):
+        super(PositionProcessor, self).__init__(config)
 
         self.backendNotFound = False
         self.timestamp = None
         self.positions = []
-        if backend.lower() not in ["openpose", "facerecognition"]:
+        if config.get("backend", None) is None:
+            config.backend = "openpose"
+        if config.backend.lower() not in ["openpose", "face_recognition"]:
             raise ValueError("Undefined backend.")
-        self.backend = backend.lower()
+        self.backend = config.backend.lower()
+        self.single_camera_distance = config.get("single_camera_distance", 100.)
 
     def process(self, info):
         self.timestamp = info["timestamp"]
         if self.backend == "openpose":
             self.process_openpose(info)
-        elif self.backend == "facerecognition":
+        elif self.backend == "face_recognition":
             self.process_face_rec(info)
 
     def process_face_rec(self, info):
-        camera_ids = list(GV.CameraList.keys())
+        camera_ids = list(GV.get("camera").keys())
         # check whether face recognition is enabled
-        if not GV.UseFaceRecognition:
+        if GV.get("util.face_recognition") is None:
             if not self.backendNotFound:
                 self.backendNotFound = True
                 raise RuntimeError("Face Recognition module not enabled.")
@@ -42,10 +45,10 @@ class PositionProcessor(BaseImageProcessor):
         while not flag:
             flag = True
             for cid in camera_ids:
-                flag = flag and (cid in GV.FaceRecognitionResult)
-        GV.locks["FaceRecognition"].acquire()
-        faces = GV.FaceRecognitionResult.copy()
-        GV.locks["FaceRecognition"].release()
+                flag = flag and (cid in GV.get("result.face_recognition", []))
+        GV.get("lock.face_recognition").acquire()
+        faces = GV.get("result.face_recognition", []).copy()
+        GV.get("lock.face_recognition").release()
 
         if len(camera_ids) == 1:
             face_id, face_loc = faces[camera_ids[0]]
@@ -56,18 +59,18 @@ class PositionProcessor(BaseImageProcessor):
                 h, w = info['img'].shape[:2]
                 x0 = float(x0) / w
                 y0 = float(y0) / h
-                line_center = GV.CameraList[camera_ids[0]].image_mapping(Point2D(x0, y0))
-                p_center = line_center.find_point_by_z(GV.SingleCameraDistance)
+                line_center = GV.get(f"camera.{camera_ids[0]}").image_mapping(Point2D(x0, y0))
+                p_center = line_center.find_point_by_z(self.single_camera_distance)
                 self.positions.append((Point2D(x0, y0), p_center.to_vec()))
         else:
             # TODO: add position recognition when using several cameras.
             pass
 
     def process_openpose(self, info):
-        # TODO: [URGENT!!] here, the info and GV.OpenPoseResult might not point to a same image.
-        camera_ids = list(GV.CameraList.keys())
+        # TODO: here, the info and GV.get("result.openpose") might not point to a same image.
+        camera_ids = list(GV.get("camera").keys())
         # check whether face recognition is enabled
-        if not GV.UseOpenpose:
+        if GV.get("util.openpose") is None:
             if not self.backendNotFound:
                 self.backendNotFound = True
                 raise RuntimeError("OpenPose module not enabled.")
@@ -78,11 +81,13 @@ class PositionProcessor(BaseImageProcessor):
         while not flag:
             flag = True
             for cid in camera_ids:
-                flag = flag and (cid in GV.OpenPoseResult)
-        GV.locks["OpenPose"].acquire()
-        keypoints = GV.OpenPoseResult.copy()
-        GV.locks["OpenPose"].release()
+                flag = flag and (cid in GV.get("result.openpose", []))
+        GV.get("lock.openpose").acquire()
+        keypoints = GV.get("result.openpose").copy()
+        GV.get("lock.openpose").release()
 
+        # the indice information is available on
+        # https://tinyurl.com/z5hdnnkd
         nose_index = 0
         neck_index = 1
         midhip_index = 8
@@ -116,10 +121,10 @@ class PositionProcessor(BaseImageProcessor):
                         cloth_color = "Unknown"
                 x0 = float(x0) / w
                 y0 = float(y0) / h
-                line_center = GV.CameraList[camera_ids[0]].image_mapping(Point2D(x0, y0))
-                p_center = line_center.find_point_by_z(GV.SingleCameraDistance)
+                line_center = GV.get(f"camera.{cid}").image_mapping(Point2D(x0, y0))
+                p_center = line_center.find_point_by_z(self.single_camera_distance)
                 self.positions.append(
-                    (Point2D(x0, y0), GV.CameraList[cid].world_mapping(p_center).to_vec(), cloth_color)
+                    (Point2D(x0, y0), GV.get(f"camera.{cid}").world_mapping(p_center).to_vec(), cloth_color)
                 )
         else:
             # Determine which body key point is used to calculate positions
@@ -146,12 +151,12 @@ class PositionProcessor(BaseImageProcessor):
             start_point = []
             direction = []
             for cid in camera_ids:
-                start_point.append(GV.CameraList[cid].pos_camera)
+                start_point.append(GV.get(f"camera.{cid}").pos_camera)
                 direction.append([])
                 for points in keypoints[cid]:
                     keypoint = points[use_index]
                     if not is_zero(keypoint):
-                        direction[-1].append(GV.CameraList[cid].image_mapping(Point2D(keypoint[0], keypoint[1])))
+                        direction[-1].append(GV.get(f"camera.{cid}").image_mapping(Point2D(keypoint[0], keypoint[1])))
 
             # Calculate position
             self.positions = calc_position(start_point, direction)
