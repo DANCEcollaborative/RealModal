@@ -18,6 +18,10 @@ Realmodal Client, process the multimodal data with complex processors including 
 result back to the client. 
 
 ### Quick Start
+Following this quick start, you will be able to run the [demo](https://aclanthology.org/2020.sigdial-1.31.pdf) we 
+present on Sigdial 2020. In this demo, Realmodal is only required to communicate with PSI. So as long as you run PSI at 
+the same time, you can get a quick demonstration, but make sure you also get other modules running correctly for the 
+complete demo experience.
 #### Requirements for both Client and Server
 * python >= 3.7
 * Required packages are listed in ```requirement.txt```. You can install all the requirements by running:
@@ -31,7 +35,11 @@ to install it manually from its official website or specify a different version.
 * Install the requirements listed above. 
 * Install [OpenPose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) if you would like to use the body pose 
 estimation functions.
-* Run the server using command:
+* You may also need more packages if you'd like to use other kinds of processors, e.g., Tensorflow, PyTorch. However, 
+the `requirement.txt` and OpenPose is sufficient for this quick start. 
+* Change the configurations under `config/config.yaml` according to your running environment. If you don't know where to
+start, leave them there. But make sure the address for the server is properly set (address-server, address-client).
+* Start the Realmodal Server on your server using command:
 ```shell script
 python3 StartServer.py
 ```
@@ -41,14 +49,21 @@ CUDA_VISIBLE_DEVICES=0,1 python3 StartServer.py
 ```
 
 #### Running the client
-* Change the variables in ```GlobalVariables.py``` and ensure the ip address is matching your server.
-* Run the client using command ```python3 StartClient.py```
+* Install the requirements listed above. 
+* Make sure the `config/config.yaml` is synchoronized with that on the server.
+* Run the client using command 
+```shell script
+python3 StartClient.py
+```
+You will see `timeout` periodically if PSI is not running. This means the Realmodal Client is trying to fetch messages 
+from ActiveMQ. When PSI starts to run, a visualization of the room layout and camera will pop out. 
 
-### Progress
+### Full document
+If you'd like to learn about the configurations, modify the existing parts, add new parts, or learn how Realmodal is
+working, please refer to the [full document](doc/document.md).    
 
-* Communication between Python and Psi (Done).
-* Communication between Client and Server (Done).
-* Add Face Recognition and Open Pose Module (Done).
-* Add Positioning calculation Module (Done).
-* Demo v2.0 (Done).
-* Add comments and documents (In progress).
+### Todos
+* Add default configuration files for all parts so one do not need to configurate everything before using.
+* Add support for `argparse` so it can receive configurations from command line.
+* Use a better logging framework for better debugging experience.  
+* Add more comments and documents.
