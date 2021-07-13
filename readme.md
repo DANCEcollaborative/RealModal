@@ -38,7 +38,7 @@ estimation functions.
 * You may also need more packages if you'd like to use other kinds of processors, e.g., Tensorflow, PyTorch. However, 
 the `requirement.txt` and OpenPose is sufficient for this quick start. 
 * Change the configurations under `config/config.yaml` according to your running environment. If you don't know where to
-start, leave them there. But make sure the address for the server is properly set (address-server, address-client).
+start, leave them there. But make sure the address for the server is properly set (address-ip, address-port).
 * Start the Realmodal Server on your server using command:
 ```shell script
 python3 StartServer.py
@@ -63,7 +63,7 @@ If you'd like to learn about the configurations, modify the existing parts, add 
 working, please refer to the [full document](doc/document.md).    
 
 ### Todos
-* Add default configuration files for all parts so one do not need to configurate everything before using.
+* Add default configuration files for all parts so one do not need to configure everything before using.
 * Add support for `argparse` so it can receive configurations from command line.
 * Use a better logging framework for better debugging experience.  
 * Add more comments and documents.

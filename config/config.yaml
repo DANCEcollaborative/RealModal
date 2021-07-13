@@ -1,14 +1,13 @@
 # Meta information for the configuration file.
-config_name: test
-config_version: 0.1
+config_name: "Sigdial 2020 - Demo"
+config_version: 1.0
 
 # Debugging mode will output more log.
 debug: False
 
 # The ip address to establish sockets between clients and server.
 address: &address
-  server: "128.2.204.127"
-  client: "brandy.lti.cs.cmu.edu"
+  ip: "128.2.204.127"
   port:
     upstream: 5416
     downstream: 5417
@@ -29,7 +28,12 @@ component: &component
     # Display size: define the position display size.
     display_size: [500, 500]
     display_margin: 50
-
+    # Room information
+    room_corner:
+      - [0, 0, 0]
+      - [378.2, 0, 0]
+      - [378.2, 416.7, 0]
+      - [0, 284.5, 0]
 
 # Define Messengers for client
 # You can add listeners here, the key should be corresponding to the name you register for the module
@@ -83,9 +87,3 @@ camera:
     whratio: 1.777778 # 16. / 9
 
 
-# Room information
-room_corner:
-  - [0, 0, 0]
-  - [378.2, 0, 0]
-  - [378.2, 416.7, 0]
-  - [0, 284.5, 0]

@@ -15,6 +15,9 @@ class PositionDisplayListener(BaseRemoteListener):
         self.display_size = config.get("display_size", (500, 500))
         self.display_margin = config.get("display_margin", 50)
         self.topic_to_psi = config.get("topic_to_psi", "Python_PSI_Location")
+        self.corners = []
+        for corner in config.get("room_corner", []):
+            self.corners.append(Point3D(corner))
 
     def receive(self, socket: DTC):
         logging("In position display listener... receiving")

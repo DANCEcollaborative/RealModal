@@ -65,21 +65,15 @@ class ForwardVisualizer(ImageMessenger):
     def build_addr_from_config(self, config=None):
         if config is None:
             config = self.config
-        if "addr_in" in config:
-            addr_in = config.address.addr_in
-        else:
-            addr_in = (config.address.client, config.address.port.downstream)
-        if "addr_out" in config:
-            addr_out = config.address.addr_out
-        else:
-            addr_out = (config.address.client, config.address.port.upstream)
+        addr_in = (config.address.ip, config.address.port.downstream)
+        addr_out = (config.address.ip, config.address.port.upstream)
         return addr_in, addr_out
 
     def attach_listeners(self, config=None):
         if config is None:
             config = self.config
-        for listener_name in self.config.listeners:
-            listener_config = self.config.listeners[listener_name]
+        for listener_name in config.listeners:
+            listener_config = config.listeners[listener_name]
             self.add(listener_name, listener_config)
 
     def process_property(self, prop_str: str):

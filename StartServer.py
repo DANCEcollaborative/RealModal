@@ -36,13 +36,13 @@ if __name__ == "__main__":
 
         # Build server:
         # Server to receive data from client:
-        addr_in = (config.address.server, config.address.port.upstream)
+        addr_in = (config.address.ip, config.address.port.upstream)
         recv_server_cls = GV.get_handler_class(config.recv_server)
         assert recv_server_cls is not None,\
             f"Handler name {config.recv_server} not defined. Please register it before using."
         recv_server = Server(addr_in, recv_server_cls)
         # Server to send data to client:
-        addr_out = (config.address.server, config.address.port.downstream)
+        addr_out = (config.address.ip, config.address.port.downstream)
         send_server_cls = GV.get_handler_class(config.send_server)
         assert send_server_cls is not None,\
             f"Handler name {config.send_server} not defined. Please register it before using."
