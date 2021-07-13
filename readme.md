@@ -1,17 +1,31 @@
-# Python-Related Branch
+# Realmodal
+
+### Introduction
 
 This repository is designed for all the python development, namely **RealModal**, including framework, submodules, etc..
 
+Realmodal is originally designed to process multimodal data streams in real time with attachable processors. It receives
+data stream from [PSI](https://github.com/DANCEcollaborative/PSI) or other modules and send back the processed 
+information.
 
-### usage
-#### Requirements
+Realmodal contains two parts, **Realmodal Client** and **Realmodal Server**, which can be required to run on a same or 
+two different machines.
+* **Realmodal Client**: designed to communicate directly with other modules within the whole project via ActiveMQ. It 
+can receive real-time multimodal streaming data, forward them to the server or process them locally, and send back the 
+results back.
+* **Realmodal Server**: designed for higher-load processing works including works with GPU usage. It receives data from 
+Realmodal Client, process the multimodal data with complex processors including deep learning methods, and send the 
+result back to the client. 
+
+### Quick Start
+#### Requirements for both Client and Server
 * python >= 3.7
 * Required packages are listed in ```requirement.txt```. You can install all the requirements by running:
 ```shell script
 pip install -r requirement.txt
 ```
 * Sometimes, the ```stomp.py``` package might not be properly installed using the previous shell command. You might need 
-to install it manually from its official website. A newer version is OK for running Realmodal.
+to install it manually from its official website or specify a different version. 
  
 #### Deployment of server
 * Install the requirements listed above. 

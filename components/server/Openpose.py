@@ -19,7 +19,7 @@ class OpenPoseProcessor(BaseImageProcessor):
     @classmethod
     def initialize(cls, config):
         if GV.get("util.openpose") is None:
-            GV.register("util.openpose", OPU())
+            GV.register("util.openpose", OPU(config.get("path")))
             GV.register("lock.openpose", threading.Lock())
 
     def process(self, info):

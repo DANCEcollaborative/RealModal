@@ -1,25 +1,20 @@
-# TODO:
-# The path to the OpenPose library should be a program parameter passed by user.
-# Here we simply use the fixed path for test.
-
 import sys
 import os
 import cv2
 import numpy as np
 
-openpose_dir = "/usr0/home/yansenwa/smartlab_component/openpose/"
-
-try:
-    sys.path.append(os.path.join(openpose_dir, 'build/python'))
-    from openpose import pyopenpose as op
-except ImportError as e:
-    print("Error: OpenPose library could not be found. "
-          "Did you enable `BUILD_PYTHON` in CMake and have this Python script in the right folder?")
-    raise e
-
 
 class OpenPoseUtil():
-    def __init__(self):
+    def __init__(self, openpose_dir="/usr0/home/yansenwa/smartlab_component/openpose/"):
+        try:
+            sys.path.append(os.path.join(openpose_dir, 'build/python'))
+            from openpose import pyopenpose as op
+        except ImportError as e:
+            print("Error: OpenPose library could not be found. "
+                  "Did you enable `BUILD_PYTHON` in CMake and have this Python script in the right folder?")
+            raise e
+
+        self.op = op
         params = dict()
         params["model_folder"] = os.path.join(openpose_dir, "models")
 
@@ -28,7 +23,7 @@ class OpenPoseUtil():
         self.opWrapper.start()
 
     def find_pose(self, img):
-        datum = op.Datum()
+        datum = self.op.Datum()
 #        print(img)
 #        print(img.shape)
         # TODO:

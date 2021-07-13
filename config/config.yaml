@@ -17,6 +17,8 @@ component: &component
   openpose:
     topic: OpenPose
     process_interval: 0.4
+    init_param:
+      path: "/usr0/home/yansenwa/smartlab_component/openpose/"
   position:
     topic: Position
     backend: OpenPose
