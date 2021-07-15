@@ -7,7 +7,17 @@ This is a document which has everything you need to know if you want to make mod
     + [Overview](#overview)
     + [Meta-Information](#meta-information)
     + [Address](#address)
-    
+    + [Components](#components)
+      - [Common Properties](#common-properties)
+      - [Component-specific Properties](#component-specific-properties)
+        * [Position](#position)
+    + [Messengers (Client)](#messengers--client-)
+      - [Forward Visualizer](#forward-visualizer)
+      - [Location Querier](#location-querier)
+      - [Dialog Messenger](#dialog-messenger)
+    + [Handler (Server)](#handler--server-)
+    + [Cameras](#cameras)
+
 ## Requirements and Quick Start
 Refer to [readme.md](../readme.md). 
 ## Configuration Details
@@ -48,3 +58,77 @@ ifconfig -a
 * **ip**: a string of the format `x.x.x.x`. The ip address of the server. Currently, only ipv4 addresses are supported.
 * **port**: two integer numbers named **upstream** and **downstream**. Available ports on the server to build 
 communication. 
+
+### Components
+Components are those attachable modules that are used to process multimodal data sent to server. Although they could be 
+deployed only on one end, most components works in pair, i.e. a listener on the client and a corresponding 
+processor on the server. Therefore, in the configuration file, the component properties are merged into one and will be 
+shared by listeners and processors.
+#### Common Properties
+* **topic**: a string. Topic used as an identifier for the handler and the messenger to distinguish which component is
+processing the data. 
+* **process_interval**: a float number. Minimum intervals allowed for each component to process the incoming data. This
+is designed to resolve the increasing latency issue due to the limit of network bandwidth. If the system is suffering 
+this issue, try to increase this value. *(Or try to fix it using a better design of network transmission)*
+* **init_param**: a dictionary. Parameters used to do the initialization. These parameters will be passed to the 
+`initialize()` method of the processors after they're created to do certain initialization steps.
+#### Component-specific Properties
+Currently, face recognition and Openpose don't require additional properties. 
+##### Position
+* **backend**: a string in `{openpose, face_recognition}` (case insensitive). The backend module used to calculate the 
+position information. Make sure the corresponding module is also activated.
+* **topic_to_psi**: a string. The ActiveMQ topic used to notify other modules of the position information.
+* **single_camera_distance**: a float number. The distance from the target to the camera used to calculate position when
+only one camera without the depth information is used.
+* **display_size**: a list containing two integers. The height and width (in pixel) of the window showing the layout of
+the room and people's position.
+* **display_margin**: the margin between the layout to the window's edges. 
+* **room_corner**: a list containing several 3D points. Coordinates of room corners (in centimeter). Please list them 
+clockwise or counterclockwise to avoid crossing lines.
+
+### Messengers (Client)
+Messengers are defined under the key `client`. Here, you can specify the messengers you are using in this project, and 
+customize properties for them. The client will look up every key included under it from the global variable lists,
+create the corresponding messenger, and initialize it with the value as parameters.
+#### Forward Visualizer
+The ForwardVisualizer is built to forward the multimodal stream from other modules(PSI, etc.) via ActiveMQ to the 
+server, while visualize the results of server processors in the client end.  
+* **address**: address to communicate with the server. See [Address](#address) section.
+* **listeners**: components used. See [Components](#components) section.
+* **topic**: a string. The topic of the ActiveMQ used for the messenger to receive image from other modules.
+* **psi_image_format**: a string in `{raw, jpg}`. The format of image received from PSI. Using `.jpg` format can reduce 
+the occupation of bandwidth much while may result in a slight loss of image quality.
+* **display_camera**: a list of strings. The cameras ids to display the processor results.
+#### Location Querier
+The LocationQuerier is built to query Kinect about the depth information for more accurate position estimation.
+* **topic_in**: a string. The topic of ActiveMQ used to receive the depth information from PSI.
+* **topic_out**: a string. The topic of ActiveMQ used to query PSI about the point of interest.
+#### Dialog Messenger
+*This module is not used in the demo and may need further debugging. It's designed to work like bazaar but can use other 
+dialog agents including neural agents.*
+
+### Handler (Server)
+Handlers are defined under the key `server`. Here, you can specify the handler you are using to receive data from client
+and send results back. 
+* **address**: address to listen and send data to the client. See [Address](#address) section.
+* **processors**: components used. See [Components](#components) section.
+* **recv_server**: a string. Name of the handler to receive data from the client.
+* **send_server**: a string. Name of the handler to send results back to the client.
+
+### Cameras
+The list of cameras in use and their properties are defined under the key `camera`. Every key in this dictionary is the 
+id of a camera.
+
+All the points, vectors defined here are in the real-world coordinate system. (Unit: centimeter) 
+* **type**: a string. The type of the camera. Currently only `webcam` is available.
+* **pos_camera**: a 3D point. The position of the camera.
+* **dir_camera**: a 3D point(representing a vector). The direction of the camera. You can measure it by calculating the
+difference between the real-world point of the image center and the position of the camera.
+* **dir_x**: a 3D point(representing a vector). The direction of the horizontal axis(x_axis). *Currently it should be
+set perpendicular to `dir_camera`. However, mathematically, as long as it's in the horizontal plane, it should work.*
+* **theta**: a float number. The vertical span angle of the camera. If not provided, it will be inferred from `phi` and 
+`whratio`.
+* **phi**: a float number. The horizontal span angle of the camera. If not provided, it will be inferred from `theta` 
+and `whratio`.
+* **whratio**: a float number. The aspect ratio of the image. If not provided, it will be inferred from `phi` and 
+`theta`. 

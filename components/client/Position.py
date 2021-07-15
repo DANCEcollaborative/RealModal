@@ -62,7 +62,7 @@ class PositionDisplayListener(BaseRemoteListener):
                 to_send += f";person_{c}&{x}:{y}:{z}"
         logging(to_send)
         self.update_layout_image(GV.get("room.corner"), person)
-        GV.get("stomp_manager").send("Python_PSI_Location", to_send)
+        GV.get("stomp_manager").send(self.topic_to_psi, to_send)
         return []
 
     def draw(self, img, buf):
