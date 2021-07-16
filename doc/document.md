@@ -3,6 +3,9 @@ This is a document which has everything you need to know if you want to make mod
 
 - [Realmodal Document](#realmodal-document)
   * [Requirements and Quick Start](#requirements-and-quick-start)
+  * [Realmodal Architecture](#realmodal-architecture)
+    + [Realmodal Client](#realmodal-client)
+    + [Messenger](#messenger)
   * [Configuration Details](#configuration-details)
     + [Overview](#overview)
     + [Meta-Information](#meta-information)
@@ -15,7 +18,7 @@ This is a document which has everything you need to know if you want to make mod
       - [Forward Visualizer](#forward-visualizer)
       - [Location Querier](#location-querier)
       - [Dialog Messenger](#dialog-messenger)
-    + [Handler (Server)](#handler--server-)
+    + [Handlers (Server)](#handlers--server-)
     + [Cameras](#cameras)
 
 ## Requirements and Quick Start
@@ -133,7 +136,7 @@ The LocationQuerier is built to query Kinect about the depth information for mor
 *This module is not used in the demo and may need further debugging. It's designed to work like bazaar but can use other 
 dialog agents including neural agents.*
 
-### Handler (Server)
+### Handlers (Server)
 Handlers are defined under the key `server`. Here, you can specify the handler you are using to receive data from client
 and send results back. 
 * **address**: address to listen and send data to the client. See [Address](#address) section.
