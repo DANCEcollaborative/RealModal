@@ -22,7 +22,7 @@ class LocationQuerier(BaseMessenger):
         self.state = "Querying"
         print("Send to topic: ", self.topic_out)
         print(f"Content: {timestamp};{pixel.x};{pixel.y}")
-        self.cm.send(self.topic_out, f"{timestamp};{pixel.x};{pixel.y}")
+        self.send(self.topic_out, f"{timestamp};{pixel.x};{pixel.y}")
         while self.state != "Pending":
             pass
         self.state = "Available"

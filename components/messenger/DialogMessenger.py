@@ -29,7 +29,7 @@ class DialogMessenger(TextMessenger):
             if response != "":
                 response = response.encode('utf-8')
                 print(f"sending message through {self.topic_out}: {response.decode()}")
-                self.cm.send(self.topic_out, response)
+                self.send(self.topic_out, response)
 
     def send_text(self, text):
         """
@@ -38,4 +38,4 @@ class DialogMessenger(TextMessenger):
         """
         text = text.encode('utf-8')
         print(text)
-        self.cm.send(self.topic_out, text)
+        self.send(self.topic_out, text)

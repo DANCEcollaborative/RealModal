@@ -26,6 +26,9 @@ class BaseMessenger(metaclass=abc.ABCMeta):
         self.cm = cm
         self.config = config
 
+    def send(self, *args, **kwargs):
+        self.cm.send(args, kwargs)
+
     def subscribe_to(self, topic):
         """
             An alias to cm.subscribe() which omit the listener parameter.

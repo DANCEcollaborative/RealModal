@@ -20,6 +20,32 @@ This is a document which has everything you need to know if you want to make mod
 
 ## Requirements and Quick Start
 Refer to [readme.md](../readme.md). 
+## Realmodal Architecture
+![Figure-Architecture](figure/Architecture.png)
+The figure shows the conceptual architecture of Realmodal. Generally speaking, Realmodal consists of two parts, 
+**Realmodal Client** and **Realmodal Server**. 
+### Realmodal Client
+Realmodal Client is the part running on the local machine. It's designed to communicate directly with other modules via
+ActiveMQ, and forward the messages to the server for further processing. 
+
+### Messenger
+Messengers are the core parts of Client. As the name illustrates, a messenger will carry data coming from ActiveMQ 
+and send them to the server. During running, a client can create several messengers to process different kinds of data 
+separately.
+
+Messengers use **CommunicationManager** to communicating with other modules via ActiveMQ. When the client begins to run,
+an overall CommunicationManager is created and stored in `self.cm` for every messenger. A messenger can use method 
+`subscribe_to` to subscribe to topics. Afterwards, when new data under the topic come in, the method `on_message` will 
+be called. If you want send message to other modules, you can use `send` method. 
+
+At the beginning of the client, the `start` method will be called. You can define some events here but it's optional.   
+
+The messenger is designed to forward message from other modules to the server. However, a messenger can be manually 
+designed for more functions. For example, it can be designed to visualize the incoming data and processing results, or 
+do simple processing work without sending the data to the server.
+
+
+   
 ## Configuration Details
 ### Overview
 Our project uses `.yaml` file to manage configurations between different settings. It is a language similar to `.json` 
