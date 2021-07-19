@@ -64,7 +64,10 @@ If you'd like to learn about the configurations, modify the existing parts, add 
 working, please refer to the [full document](doc/document.md).    
 
 ### Todos
-* Add default configuration files for all parts so one do not need to configure everything before using.
-* Add support for `argparse` so it can receive configurations from command line.
-* Use a better logging framework for better debugging experience.  
-* Add more comments and documents.
+* Codes:
+    * Add default configuration files for all parts so one do not need to configure everything before using.
+    * Add support for `argparse` so it can receive configurations from command line.
+    * Use a better logging framework for better debugging experience.
+* Comments and documents:  
+    * Add more comments for core methods.
+    * Add a demonstration on how to add classes to the document.

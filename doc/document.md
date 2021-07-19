@@ -5,7 +5,12 @@ This is a document which has everything you need to know if you want to make mod
   * [Requirements and Quick Start](#requirements-and-quick-start)
   * [Realmodal Architecture](#realmodal-architecture)
     + [Realmodal Client](#realmodal-client)
-    + [Messenger](#messenger)
+      - [Messenger](#messenger)
+      - [ForwardVisualizer](#forwardvisualizer)
+    + [Realmodal Server](#realmodal-server)
+      - [Processors](#processors)
+  * [Adding New Components](#adding-new-components)
+    + [GlobalVariables](#globalvariables)
   * [Configuration Details](#configuration-details)
     + [Overview](#overview)
     + [Meta-Information](#meta-information)
@@ -31,7 +36,7 @@ The figure shows the conceptual architecture of Realmodal. Generally speaking, R
 Realmodal Client is the part running on the local machine. It's designed to communicate directly with other modules via
 ActiveMQ, and forward the messages to the server for further processing. 
 
-### Messenger
+#### Messenger
 Messengers are the core parts of Client. As the name illustrates, a messenger will carry data coming from ActiveMQ 
 and send them to the server. During running, a client can create several messengers to process different kinds of data 
 separately.
@@ -47,8 +52,83 @@ The messenger is designed to forward message from other modules to the server. H
 designed for more functions. For example, it can be designed to visualize the incoming data and processing results, or 
 do simple processing work without sending the data to the server.
 
+#### ForwardVisualizer
+There is a special predefined messenger named ForwardVisualizer. As the name indicates, this messenger *forwards* data 
+to the server while *visualize* the data and the result on the local machine. Currently, only image data are forwarded
+by this messenger.
 
+In order to receive results from different processors which may have different meanings and formats, **listeners** are 
+attached to the ForwardVisualizer. ForwardVisualizer, listeners and processors which will be mentioned in the server 
+section use TCP Socket to communicate with each other. Some methods are implemented for easier use. Every listener 
+should implement two methods:
+* `receive(socket)`: the method to receive results from the server via socket. The return value of this method should be
+a buffer containing necessary information used to draw the results on the canvas.
+* `draw(img, buf)`: draw the results stored in the buffer on the image.  
+
+### Realmodal Server
+Realmodal Server is the part running on the server for heavy computations. The server maintains to handlers when 
+running: one is for receiving messages from the Client, and the other is for sending back processed results. Current 
+handlers are only designed for image data but you can design new handlers based on specific need. Of course, you may 
+need new messengers and listeners on the Client end as well.
+
+#### Processors
+Processors are individual units running on Realmodal Server, waiting for incoming messages. They're initialize when the
+Server starts to run, and are called by the handler when new messages are flowing in. Every processor should implement 
+the following methods:
+* `initialize(config)`: (optional) this is a class method. It defines the behavior of how the processor should do as 
+initialization.
+* `process(info)`: the core method to process message stored in info. 
+* `send(soc)`: send the processed information back to the Realmodal Client. The number and the type of the messages sent
+through this socket should match the definitions in the corresponding listener.         
+
+## Adding New Components
+It's quite simple to add new components to Realmodal and you don't need bother understanding and changing the pipeline.
+Generally speaking, when you need some new functions in your projects, follow these steps:
+* Decide what part you need to add. If you still only need the image information, you may only need a pair of listener
+and processor. If you need a type of message involved in the pipeline, you may need a new messenger. And further, if you
+need this new type of information to be processed on the server, you may also need a new handler.
+* Create a new class derived from the corresponding base class and implement the details. For example, if you're 
+implementing a new listener, you can create a new class derived from `BaseRemoteListener` and implement `receive()` and
+`draw()`.      
+* Register it to the GlobalVariables for easy fetch by configuration file. 
+* Add the new part to the configuration file.
+And you are all set! Now you can run the pipeline and test your new components. 
+
+### GlobalVariables
+The `GlobalVariables` class is a special class that stores all the global information shared by different parts of the 
+system, e.g., the mapping information between names and the corresponding classes, the locks that ensure safety for 
+multi-processing, and the temporary variables that may be used by another module in the future. 
+
+There are two main usage for this class:
+1. Register a class(listener, handler, etc.) with a proper name and make it configurable in the configuration file. In
+order to register a class, you can simply add a corresponding class decorator to the class. 
+    
+   As an example, this is how the OpenPose Listener is defined and and using `openpose` as the name of it.  
+   ```python
+   from common.GlobalVariables import GV
+   from components.client.RemoteListener import BaseRemoteListener
    
+   @GV.register_listener("openpose")
+   class OpenPoseListener(BaseRemoteListener):
+       def __init__(self, config):
+           ...
+   ```   
+
+2. Store and pass global variables for future use. You can use `GV.register(name, value)` and `GV.get(name)` to store 
+and fetch values. 
+
+   You can also use `.` to make organized global variables. For example, running the code:
+   ```python
+   from common.GlobalVariables import GV
+   GV.register("test.first", "first value")
+   GV.register("test.second", "second value")
+   print(GV.get("test"))
+   ``` 
+   The result will be:
+   ```python
+   {'first': 'first value', 'second': 'second value'}
+   ```
+  
 ## Configuration Details
 ### Overview
 Our project uses `.yaml` file to manage configurations between different settings. It is a language similar to `.json` 
