@@ -27,7 +27,7 @@ class BaseMessenger(metaclass=abc.ABCMeta):
         self.config = config
 
     def send(self, *args, **kwargs):
-        self.cm.send(args, kwargs)
+        self.cm.send(*args, **kwargs)
 
     def subscribe_to(self, topic):
         """

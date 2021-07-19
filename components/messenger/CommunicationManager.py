@@ -27,6 +27,7 @@ class CommunicationManager():
         :param msg:
             The message to send. It will be sent as a byte message whatever its original type is.
         """
+        print("Send message via cm", msg, topic)
         self.conn.send(body=msg, destination="/topic/%s" % topic)
 
     def subscribe(self, listener, topic):
