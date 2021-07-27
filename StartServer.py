@@ -1,13 +1,33 @@
 from common.Configuration import load_yaml
-from Socket.Server import *
-from components.server import *
-from common.Camera import *
+
+from common.logprint import get_logger
+
 
 if __name__ == "__main__":
     # Get configurations
     # TODO: add support for argparse
     config_path = "config/config.yaml"
     config_all = load_yaml(config_path)
+
+    if "logging" in config_all:
+        log_config = config_all["logging"]
+        level = log_config.get("logging_level", "info")
+        logger = get_logger(__name__, level=level, set_global=True)
+    else:
+        logger = get_logger(__name__, level="info", set_global=True)
+
+    from Socket.Server import *
+    from components.server import *
+    from common.Camera import *
+    from common.Report import ReportManager
+
+    # set up report manager
+    if "logging" in config_all:
+        report_period = config_all.logging.get("report_period", 60)
+        report_level = config_all.logging.get("report_level", "info")
+        rm = ReportManager(report_period, report_level)
+    else:
+        rm = ReportManager()
 
     if "camera" in config_all:
         config = config_all.camera
@@ -20,7 +40,6 @@ if __name__ == "__main__":
 
     if "server" in config_all:
         config = config_all.server
-        print(config.keys())
         # Initialize modules:
         for key in config.processors:
             processor_cls = GV.get_processor_class(key)

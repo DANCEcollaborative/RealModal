@@ -1,6 +1,9 @@
 from components.messenger.BaseMessenger import TextMessenger
 from common.GlobalVariables import GV
 from DialogAgents import agent_build_helper
+from common.logprint import get_logger
+
+logger = get_logger(__name__)
 
 
 @GV.register_messenger("dialog_messenger")
@@ -16,7 +19,7 @@ class DialogMessenger(TextMessenger):
         # self.agent = agent_build_helper(*args, **kwargs)
 
     def process_text(self, text):
-        print(text)
+        logger.debug(text)
         content = dict()
         if text.split(";%;")[0] == "multimodal:true":
             for kv in text.split(";%;"):
@@ -28,7 +31,7 @@ class DialogMessenger(TextMessenger):
             response = self.agent.respond(content["speech"])
             if response != "":
                 response = response.encode('utf-8')
-                print(f"sending message through {self.topic_out}: {response.decode()}")
+                logger.debug(f"sending message through {self.topic_out}: {response.decode()}")
                 self.send(self.topic_out, response)
 
     def send_text(self, text):
@@ -37,5 +40,5 @@ class DialogMessenger(TextMessenger):
         :return: None
         """
         text = text.encode('utf-8')
-        print(text)
+        logger.debug(text)
         self.send(self.topic_out, text)

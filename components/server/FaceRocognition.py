@@ -2,8 +2,11 @@ from common.GlobalVariables import GV
 from components.server.ServerProcessor import BaseImageProcessor
 from utils.FaceRecognitionUtil import FaceRecognitionUtil as FRU
 from Socket.BaseSocket import BaseTCPSocket
+from common.logprint import get_logger
 
 import threading
+
+logger = get_logger(__name__)
 
 
 @GV.register_processor("face_recognition")
@@ -36,10 +39,10 @@ class FaceRecognitionProcessor(BaseImageProcessor):
 
     def send(self, soc: BaseTCPSocket):
         l = len(self.face_id)
-        print("find %d face(s) in the image" % l)
+        logger.debug("find %d face(s) in the image" % l)
         soc.send_int(l)
         for i in range(l):
-            print("sending face %d" % i)
+            logger.debug("sending face %d" % i)
             soc.send_int(self.face_id[i])
             soc.send_int(self.face_loc[i][0])
             soc.send_int(self.face_loc[i][1])

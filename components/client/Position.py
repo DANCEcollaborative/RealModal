@@ -3,10 +3,11 @@ from components.client.RemoteListener import BaseRemoteListener
 import cv2
 
 from Socket.Client import DataTransmissionClient as DTC
-from common.Logging import logging
+from common.logprint import get_logger
 from common.Geometry import *
 import time
 
+logger = get_logger(__name__)
 
 @GV.register_listener("position")
 class PositionDisplayListener(BaseRemoteListener):
@@ -19,17 +20,22 @@ class PositionDisplayListener(BaseRemoteListener):
         for corner in config.get("room_corner", []):
             self.corners.append(Point3D(corner))
 
+        self.num_received = 0
+        self.total_latency = 0.
+
     def receive(self, socket: DTC):
-        logging("In position display listener... receiving")
+        self.num_received += 1
+        logger.debug("In position display listener... receiving")
         prop_dict = self.receive_properties(socket)
         pos_num = socket.recv_int()
-        print("%d position(s) to receive." % pos_num)
+        logger.debug("%d position(s) to receive." % pos_num)
         to_send = str(pos_num) + ';' + str(prop_dict["timestamp"])
         time_all = GV.get("visualizer.sendtime", dict())
-        print(len(time_all), time_all.keys(), prop_dict['timestamp'])
-        print(prop_dict['timestamp'])
+        logger.debug(f"{len(time_all)}, {time_all.keys()}, {prop_dict['timestamp']}")
+        logger.debug(prop_dict['timestamp'])
         if str(prop_dict['timestamp']) in time_all:
-            print(f"For frame {prop_dict['timestamp']}, processing time: {time.time() - time_all[str(prop_dict['timestamp'])]}")
+            logger.debug(f"For frame {prop_dict['timestamp']}, processing time: {time.time() - time_all[str(prop_dict['timestamp'])]}")
+            self.total_latency += time.time() - time_all[str(prop_dict['timestamp'])]
             current_ts = prop_dict['timestamp']
             keys = time_all.keys()
             for key in list(keys):
@@ -38,7 +44,7 @@ class PositionDisplayListener(BaseRemoteListener):
         raw_info = []
         person = []
         for i in range(pos_num):
-            print("receiving person %d" % i)
+            logger.debug("receiving person %d" % i)
             x0 = socket.recv_float()
             y0 = socket.recv_float()
             x = socket.recv_float()
@@ -46,7 +52,7 @@ class PositionDisplayListener(BaseRemoteListener):
             z = socket.recv_float()
             c = socket.recv_str()
             raw_info.append((x0, y0, x, y, z, c))
-            print(f"received person {i}, location: ({x0}, {y0})")
+            logger.debug(f"received person {i}, location: ({x0}, {y0})")
         for i, (x0, y0, x, y, z, c) in enumerate(raw_info):
             location_querier = GV.get("messenger.location_querier", None)
             if location_querier is not None:
@@ -60,7 +66,7 @@ class PositionDisplayListener(BaseRemoteListener):
             else:
                 person.append((x, y, z))
                 to_send += f";person_{c}&{x}:{y}:{z}"
-        logging(to_send)
+        logger.debug(to_send)
         self.update_layout_image(self.corners, person)
         GV.get("stomp_manager").send(self.topic_to_psi, to_send)
         return []
@@ -75,7 +81,7 @@ class PositionDisplayListener(BaseRemoteListener):
         maxy = max(map(lambda x: x.y if type(x) is Point3D else x[1], corner))
         dis_x, dis_y = self.display_size
         mar = self.display_margin
-        logging(person)
+        logger.debug(person)
 
         def cov(x, y=None, z=None) -> (int, int):
             if type(x) == int:
@@ -101,3 +107,7 @@ class PositionDisplayListener(BaseRemoteListener):
         cv2.imshow("Smart Room - Body Positions", img)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             return
+
+    def on_report_overall(self, overall_time, logger):
+        logger.info(f"Position module received {self.num_received} messages.")
+        logger.info(f"Average latency: {self.total_latency / self.num_received}")

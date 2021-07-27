@@ -3,11 +3,14 @@ config_name: "Sigdial 2020 - Demo"
 config_version: 1.0
 
 # Debugging mode will output more log.
-debug: False
+logging:
+  logging_level: info
+  report_level: info
+  report_period: 60
 
 # The ip address to establish sockets between clients and server.
 address: &address
-  ip: "128.2.204.127"
+  ip: "128.2.204.16"
   port:
     upstream: 5416
     downstream: 5417

@@ -1,7 +1,9 @@
 from common.Geometry import *
 from common.GlobalVariables import GV
 from components.messenger.BaseMessenger import BaseMessenger
+from common.logprint import get_logger
 
+logger = get_logger(__name__)
 
 @GV.register_messenger("location_querier")
 class LocationQuerier(BaseMessenger):
@@ -20,8 +22,8 @@ class LocationQuerier(BaseMessenger):
 
     def query(self, cid: str, timestamp: int, pixel: Point2D):
         self.state = "Querying"
-        print("Send to topic: ", self.topic_out)
-        print(f"Content: {timestamp};{pixel.x};{pixel.y}")
+        logger.debug(f"Send to topic: {self.topic_out}")
+        logger.debug(f"Content: {timestamp};{pixel.x};{pixel.y}")
         self.send(self.topic_out, f"{timestamp};{pixel.x};{pixel.y}")
         while self.state != "Pending":
             pass
@@ -31,7 +33,7 @@ class LocationQuerier(BaseMessenger):
     def on_message(self, msg):
         # TODO: add support for more cameras
         msg = msg.body
-        print("Get location message from PSI:", msg)
+        logger.debug(f"Get location message from PSI: {msg}")
         msg_split = msg.split(";")
         if msg_split[1] == "null":
             # Cannot get the location information from depth camera

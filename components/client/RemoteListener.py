@@ -1,12 +1,14 @@
 from Socket.BaseSocket import BaseTCPSocket
 from common.GlobalVariables import GV
+from common.Report import ReportCallback
 
 import abc
 
 
 @GV.register_listener("base")
-class BaseRemoteListener(metaclass=abc.ABCMeta):
+class BaseRemoteListener(ReportCallback, metaclass=abc.ABCMeta):
     def __init__(self, config):
+        super().__init__()
         self.config = config
         self.topic = config.get("topic", None)
 

@@ -1,4 +1,7 @@
 import stomp
+from common.logprint import get_logger
+
+logger = get_logger(__name__)
 
 
 class CommunicationManager():
@@ -27,7 +30,6 @@ class CommunicationManager():
         :param msg:
             The message to send. It will be sent as a byte message whatever its original type is.
         """
-        print("Send message via cm", msg, topic)
         self.conn.send(body=msg, destination="/topic/%s" % topic)
 
     def subscribe(self, listener, topic):
@@ -45,7 +47,7 @@ class CommunicationManager():
         if id(listener) in self.connections:
             # Prevent subscribe to a topic for multiple times.
             if topic in self.topics[id(listener)]:
-                print("Listener %s has already subscribed to topic %s." % (str(listener), topic))
+                logger.warning("Listener %s has already subscribed to topic %s." % (str(listener), topic))
                 return
             else:
                 self.connections[id(listener)].subscribe('/topic/%s' % topic)
@@ -70,13 +72,13 @@ class CommunicationManager():
         """
         if id(listener) in self.connections:
             if topic not in self.topics[id(listener)]:
-                print("Listener %s hasn't subscribed to topic %s" % (str(listener), topic))
+                logger.warning("Listener %s hasn't subscribed to topic %s" % (str(listener), topic))
                 return
             else:
                 self.connections[id(listener)].unsubscribe("/topic/%s" % topic)
                 self.topics[id(listener)].remove("topic")
         else:
-            print("Listener %s hasn't subscribed to anything" % (str(listener)))
+            logger.warning("Listener %s hasn't subscribed to anything" % (str(listener)))
 
     def __del__(self):
         for listener_id in self.connections:

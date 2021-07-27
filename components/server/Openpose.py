@@ -5,7 +5,9 @@ from utils.OpenPoseUtil import OpenPoseUtil as OPU
 
 import threading
 import base64
+from common.logprint import get_logger
 
+logger = get_logger(__name__)
 
 @GV.register_processor("openpose")
 class OpenPoseProcessor(BaseImageProcessor):
@@ -39,7 +41,7 @@ class OpenPoseProcessor(BaseImageProcessor):
             l = self.poseKeypoints.shape[0]
         else:
             l = 0
-        print("find %d person(s) in the image" % l)
+        logger.debug("find %d person(s) in the image" % l)
         soc.send_int(l)
         # Send poses only when there are at least one person detected.
         # This is because self.poseKeypoints will be a very weird value if no people is detected due to some features

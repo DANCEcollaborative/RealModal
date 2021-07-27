@@ -6,10 +6,14 @@ import base64
 import numpy as np
 import threading
 import cv2
+from common.Report import ReportCallback
+from common.logprint import get_logger
+
+logger = get_logger(__name__)
 
 
 @GV.register_messenger("base_messenger")
-class BaseMessenger(metaclass=abc.ABCMeta):
+class BaseMessenger(ReportCallback, metaclass=abc.ABCMeta):
     """
     Abstract base class for all the listeners receiving messages from messenger.
     You could define your own class for handling messenger message but I strongly recommend you to derive from this class.
@@ -20,6 +24,7 @@ class BaseMessenger(metaclass=abc.ABCMeta):
         :param config: Omega.DictConfig
             Configurations.
         """
+        super().__init__()
         cm = GV.get("stomp_manager")
         assert cm is not None, \
             "ActiveMQ is not initialized, please register a messenger manager before creating messengers."
@@ -229,7 +234,7 @@ class ImageMessenger(BaseMessenger, metaclass=abc.ABCMeta):
                 raise ValueError("Unrecognized image format.")
         # TODO: specify possible exceptions here.
         except Exception as e:
-            print(e)
+            logger.warning(f"Exception {type(e)} occurred when decoding message, traceback:", exc_info=True)
             return None
         return img, base64_img
 

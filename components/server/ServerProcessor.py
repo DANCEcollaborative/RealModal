@@ -5,11 +5,16 @@ import abc
 import threading
 
 from Socket.BaseSocket import BaseTCPSocket
+from common.Report import ReportCallback
+from common.logprint import get_logger
+
+logger = get_logger(__name__)
 
 
 @GV.register_processor("base")
-class BaseImageProcessor(metaclass=abc.ABCMeta):
+class BaseImageProcessor(ReportCallback, metaclass=abc.ABCMeta):
     def __init__(self, config):
+        super().__init__()
         topic = config.get("topic", None)
         self.topic = topic
         process_interval = config.get("process_interval", 0.5)
@@ -26,7 +31,7 @@ class BaseImageProcessor(metaclass=abc.ABCMeta):
         try:
             self.send(soc)
         except Exception as e:
-            print(e)
+            logger.warning(f"Exception {type(e)} occurred when sending messages, traceback:", exc_info=True)
 
     @abc.abstractmethod
     def send(self, soc: BaseTCPSocket):
@@ -43,7 +48,7 @@ class BaseImageProcessor(metaclass=abc.ABCMeta):
                 self.process(info)
                 GV.get("processor.state")[pos] = f"Pending:{ip_addr}"
             except Exception as e:
-                print(e)
+                logger.warning(f"Exception {type(e)} occurred when processing data, traceback:", exc_info=True)
                 GV.get("processor.state")[pos] = "Available"
             finally:
                 GV.get("processor.lock")[pos].release()

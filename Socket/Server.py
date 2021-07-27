@@ -7,7 +7,9 @@ from socket import socket, AF_INET, SOCK_STREAM
 from Socket.BaseSocket import BaseTCPSocket
 
 
-from common.Logging import logging
+from common.logprint import get_logger
+
+logger = get_logger(__name__)
 
 
 class Server():
@@ -60,7 +62,7 @@ class SimpleTCPServer(BaseTCPSocket):
             self.socket_server.bind(self.addr)
             self.socket_server.listen(5)
         c, c_addr = self.socket_server.accept()
-        print("New connection from address: ", c_addr)
+        logger.info("New connection from address: ", c_addr)
         self.tcp_socket = c
 
     def stop(self, socket_only=True):
@@ -74,13 +76,13 @@ class SimpleTCPServer(BaseTCPSocket):
             try:
                 self.tcp_socket.close()
             except Exception as e:
-                print(e)
+                logger.warning(f"Exception {type(e)} occurred when closing socket, traceback:", exc_info=True)
         if not socket_only:
             if self.socket_server is not None:
                 try:
                     self.socket_server.close()
                 except Exception as e:
-                    print(e)
+                    logger.warning(f"Exception {type(e)} occurred when closing server, traceback:", exc_info=True)
 
     def restart(self):
         """
@@ -123,7 +125,7 @@ class ImageReceiveHandler(DataTransmissionHandler):
         super().setup()
 
     def finish(self):
-        print("ImageReceiveHandler terminated a request from: ", self.client_address)
+        logger.info(f"ImageReceiveHandler terminated a request from: {self.client_address}")
         super().finish()
 
     def handle(self):
@@ -131,7 +133,7 @@ class ImageReceiveHandler(DataTransmissionHandler):
         self.start()
 
     def start(self):
-        print("ImageReceiveHandler received a new request from: ", self.client_address)
+        logger.info(f"ImageReceiveHandler received a new request from: {self.client_address}")
         self.recv_process()
 
     def recv_process(self):
@@ -145,11 +147,11 @@ class ImageReceiveHandler(DataTransmissionHandler):
                 img = self.recv_img()
                 if img is None:
                     continue
-                logging("Received Image:", img.shape)
+                logger.debug(f"Received Image: {img.shape}")
 
                 # Receive the properties of the image including timestamp, camera_id and other user-defined properties.
                 temp = self.recv_str()
-                logging(temp)
+                logger.debug(temp)
                 info = dict()
                 info["img"] = img
                 while temp != "END":
@@ -163,7 +165,7 @@ class ImageReceiveHandler(DataTransmissionHandler):
                         elif prop_type == "float":
                             info[prop_name] = float(prop_content)
                     temp = self.recv_str()
-                    logging(temp)
+                    logger.debug(temp)
 
                 # Check the processors. Feed data to free processors in another thread.
                 for i, state in enumerate(GV.get("processor.state")):
@@ -173,11 +175,11 @@ class ImageReceiveHandler(DataTransmissionHandler):
                             (info, i, self.client_address[0])
                         )
             except (ConnectionResetError, ValueError, IOError) as e:
-                print("Connection terminated")
+                logger.info("Connection terminated")
                 self.event.set()
                 break
             except Exception as e:
-                print(e)
+                logger.warning(f"Exception {type(e)} occurred when receiving data, traceback:", exc_info=True)
                 continue
 
 
@@ -191,7 +193,7 @@ class DataSendHandler(DataTransmissionHandler):
         self.send_lock = threading.Lock()
 
     def finish(self):
-        print("DataSendHandler terminated a request from: ", self.client_address)
+        logger.info(f"DataSendHandler terminated a request from: {self.client_address}")
         super().finish()
 
     def handle(self):
@@ -199,7 +201,7 @@ class DataSendHandler(DataTransmissionHandler):
         self.start()
 
     def start(self):
-        print("DataSendHandler received a new request from: ", self.client_address)
+        logger.info(f"DataSendHandler received a new request from: {self.client_address}")
         self.send_process()
 
     def send_process(self):
@@ -212,11 +214,11 @@ class DataSendHandler(DataTransmissionHandler):
                             lock_flag = True
                             GV.get("processor.entity")[i].base_send(self)
                     except (ConnectionResetError, ValueError, IOError) as e:
-                        print("Connection terminated")
+                        logger.info("Connection terminated")
                         self.event.set()
                         break
                     except Exception as e:
-                        print(e)
+                        logger.warning(f"Exception {type(e)} occurred when sending data, traceback:", exc_info=True)
                     finally:
                         if lock_flag:
                             self.send_lock.release()

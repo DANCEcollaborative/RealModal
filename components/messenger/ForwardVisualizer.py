@@ -6,11 +6,12 @@ import cv2
 import socket
 import threading
 
-from common.Logging import logging
+from common.logprint import get_logger
 from Socket.Client import DataTransmissionClient as DTC
 
 import time
 
+logger = get_logger(__name__)
 
 @GV.register_messenger("forward_visualizer")
 class ForwardVisualizer(ImageMessenger):
@@ -62,6 +63,12 @@ class ForwardVisualizer(ImageMessenger):
         self.ready_to_send = False
         self.attach_listeners()
 
+        self.num_recv_from_PSI = 0
+        self.num_send_to_server = 0
+        self.num_fail_send_to_server = 0
+        self.num_recv_from_server = 0
+        self.num_restart_socket = 0
+
     def build_addr_from_config(self, config=None):
         if config is None:
             config = self.config
@@ -85,13 +92,13 @@ class ForwardVisualizer(ImageMessenger):
     def add(self, listener_name: str, config):
         listener_cls = GV.get_listener_class(listener_name)
         if listener_cls is None:
-            print(f"WARNING: Can't find listener {listener_name}")
+            logger.warning(f"Can't find listener {listener_name}")
             return
         listener = listener_cls(config)
         topic = listener.topic
         lis_id = id(listener)
         if topic in self.register_topic:
-            print("Change listener for topic %s" % topic)
+            logger.info("Change listener for topic %s" % topic)
             for i, old_id in enumerate(self.register_id):
                 if old_id == self.register_topic[topic]:
                     self.register_id[i] = lis_id
@@ -109,6 +116,8 @@ class ForwardVisualizer(ImageMessenger):
         self.register[lis_id] = listener
 
     def start(self):
+        for lis_id in self.register:
+            self._report_manager.register(self.register[lis_id])
         self.running = True
         _thread.start_new_thread(self.recv_process, ())
         _thread.start_new_thread(self.send_process, ())
@@ -134,7 +143,7 @@ class ForwardVisualizer(ImageMessenger):
                     img = self.register[reg_id].draw(img, buf)
                 cv2.imshow('Smart Lab - %s' % key, img)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
-                    self.stop()
+                    GV.register("ended", True)
                     break
 
     def stop(self):
@@ -142,18 +151,17 @@ class ForwardVisualizer(ImageMessenger):
         self.receive_socket.stop()
         self.image_socket.stop()
         cv2.destroyAllWindows()
-        GV.register("ended", True)
 
-    @staticmethod
-    def restart_socket(s):
-        print("Restarting socket...", end=" ")
+    def restart_socket(self, s):
+        logger.info("Restarting socket")
+        self.num_restart_socket += 1
         try:
             s.stop()
         except Exception:
             pass
         finally:
             s.start()
-            print("Success!")
+            logger.info("Socket successfully restarted!")
 
     def process_image(self, img):
         if self.running:
@@ -205,13 +213,22 @@ class ForwardVisualizer(ImageMessenger):
                     self.image_socket.send_img(self.width, self.height, img, form='.jpg')
                     self.send_property()
                 except ValueError:
-                    print("ValueError occurred.")
+                    logger.error(f"ValueError occurred when sending image")
+                    logger.error(f"self.width: {self.width}")
+                    logger.error(f"self.height: {self.height}")
+                    logger.error(f"image data: {img}")
+                    logger.error(f"image format: '.jpg'")
+                    self.num_fail_send_to_server += 1
                 except ConnectionAbortedError:
-                    print("Connection to server stopped.")
+                    logger.warning("Connection to server stopped.")
                     self.restart_socket(self.image_socket)
+                    self.num_fail_send_to_server += 1
                 except Exception as e:
-                    print(e)
+                    logger.warning(f"Undefined error type {type(e)} occured when sending image, traceback:",
+                                   exc_info=True)
+                    self.num_fail_send_to_server += 1
                 finally:
+                    self.num_send_to_server += 1
                     self.ready_to_send = False
 
     def recv_process(self):
@@ -219,24 +236,36 @@ class ForwardVisualizer(ImageMessenger):
         while self.running:
             try:
                 topic = self.receive_socket.recv_str()
-                logging(topic)
-                logging(topic.split(":"))
+                logger.debug(topic)
+                logger.debug(topic.split(":"))
                 if topic.split(":")[0] == "type":
                     _, topic, cam_id = topic.split(":")
-                    print(self.register_topic)
+                    logger.debug(self.register_topic)
                     rid = self.register_topic[topic]
                     buf = self.register[rid].receive(self.receive_socket)[:]
                     self.register_lock[rid].acquire()
                     self.register_buffer[rid][cam_id] = buf
                     self.register_lock[rid].release()
                 else:
-                    logging(topic.split(":")[0], "type", topic.split(":")[0] == "type")
+                    logger.debug(topic.split(":")[0], "type", topic.split(":")[0] == "type")
                     continue
             except socket.timeout as e:
-                print(e)
-                continue
+                pass
             except ValueError as e:
+                logger.error(f"ValueError occurred when receiving data")
                 self.restart_socket(self.receive_socket)
             except OSError as e:
-                print("Socket Closed.")
+                logger.info("Socket Closed.")
 
+    def on_report_overall(self, overall_time, logger):
+        logger.info(f"Received {self.num_recv_from_PSI} images from PSI. "
+                    f"({self.num_recv_from_PSI / overall_time} per second)")
+        logger.info(f"Sent {self.num_send_to_server} images to server. ({self.num_send_to_server / overall_time} "
+                    f"per second)")
+        logger.info(f"Among those, {self.num_fail_send_to_server} failed. "
+                    f"({self.num_fail_send_to_server / overall_time} per second)")
+        logger.info(f"Restarted sockets for {self.num_restart_socket} time(s).")
+
+    def on_message(self, msg):
+        self.num_recv_from_PSI += 1
+        super().on_message(msg)

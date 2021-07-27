@@ -8,6 +8,9 @@ from common.Color import get_color_name
 
 import numpy as np
 
+from common.logprint import get_logger
+
+logger = get_logger(__name__)
 
 @GV.register_processor("position")
 class PositionProcessor(BaseImageProcessor):
@@ -23,6 +26,8 @@ class PositionProcessor(BaseImageProcessor):
             raise ValueError("Undefined backend.")
         self.backend = config.backend.lower()
         self.single_camera_distance = config.get("single_camera_distance", 100.)
+
+
 
     def process(self, info):
         self.timestamp = info["timestamp"]
@@ -165,11 +170,11 @@ class PositionProcessor(BaseImageProcessor):
         soc.send_str(f"timestamp:int:{self.timestamp}")
         soc.send_str("END")
         l = len(self.positions)
-        print(f"sending message for timestamp: {self.timestamp}")
-        print("find %d person(s) in the space" % l)
+        logger.debug(f"sending message for timestamp: {self.timestamp}")
+        logger.debug("find %d person(s) in the space" % l)
         soc.send_int(l)
         for i, (p, (x, y, z), c) in enumerate(self.positions):
-            print("sending person %d" % i)
+            logger.debug("sending person %d" % i)
             soc.send_float(p.x)
             soc.send_float(p.y)
             soc.send_float(x)

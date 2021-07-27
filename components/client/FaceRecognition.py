@@ -3,8 +3,9 @@ from components.client.RemoteListener import BaseRemoteListener
 import cv2
 
 from Socket.Client import DataTransmissionClient as DTC
-from common.Logging import logging
+from common.logprint import get_logger
 
+logger = get_logger(__name__)
 
 @GV.register_listener("face_recognition")
 class FaceRecognitionListener(BaseRemoteListener):
@@ -23,7 +24,7 @@ class FaceRecognitionListener(BaseRemoteListener):
             loc3 = socket.recv_int()
             loc4 = socket.recv_int()
             buf.append((fid, (loc1, loc2, loc3, loc4)))
-        logging(buf)
+        logger.debug(buf)
         return buf
 
     def draw(self, img, buf):
