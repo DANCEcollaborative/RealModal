@@ -6,7 +6,7 @@ config_version: 1.0
 logging:
   logging_level: info
   report_level: info
-  report_period: 60
+  report_period: 10
 
 # The ip address to establish sockets between clients and server.
 address: &address

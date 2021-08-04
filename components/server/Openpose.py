@@ -29,6 +29,7 @@ class OpenPoseProcessor(BaseImageProcessor):
         if img.shape[-1] == 4:
             img = img[:, :, :3]
         self.poseKeypoints, _ = self.openpose.find_pose(img)
+        logger.debug(type(self.poseKeypoints))
         GV.get("lock.openpose").acquire()
         GV.register(
             f"result.openpose.{info['camera_id']}",

@@ -110,4 +110,4 @@ class PositionDisplayListener(BaseRemoteListener):
 
     def on_report_overall(self, overall_time, logger):
         logger.info(f"Position module received {self.num_received} messages.")
-        logger.info(f"Average latency: {self.total_latency / self.num_received}")
+        logger.info(f"Average latency: {0.0 if self.num_received == 0 else self.total_latency / self.num_received}")

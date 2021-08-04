@@ -51,6 +51,7 @@ class ReportManager():
             while time.time() - self.last_time < self.period:
                 pass
             this_time = time.time()
+            self.logger.info(f"###############################################")
             self.logger.info(f"Reporting:")
             period_time = this_time - self.last_time
             self.logger.info(f"In this period (lasting for {period_time:.2f} seconds), ")
@@ -58,8 +59,10 @@ class ReportManager():
                 obj = self.report_dict[key]
                 obj.on_report_single_period(period_time, self.logger)
             overall_time = this_time - self.start_time
+            self.logger.info(f"###############################################")
             self.logger.info(f"Overall (lasting for {overall_time:.2f} seconds), ")
             for key in self.report_dict:
                 obj = self.report_dict[key]
                 obj.on_report_overall(overall_time, self.logger)
             self.last_time = this_time
+            self.logger.info(f"###############################################")

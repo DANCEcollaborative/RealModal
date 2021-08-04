@@ -36,5 +36,9 @@ class OpenPoseUtil():
         if imageToProcess is None:
             return np.array([]), None
         datum.cvInputData = imageToProcess
-        self.opWrapper.emplaceAndPop([datum])
-        return datum.poseKeypoints, datum.cvOutputData
+        self.opWrapper.emplaceAndPop(self.op.VectorDatum([datum]))
+        if datum.poseKeypoints is None:
+            return np.array([]), datum.cvOutputData
+        else:
+            return datum.poseKeypoints, datum.cvOutputData
+
