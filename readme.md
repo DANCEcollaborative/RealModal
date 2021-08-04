@@ -63,6 +63,33 @@ from ActiveMQ. When PSI starts to run, a visualization of the room layout and ca
 If you'd like to learn about the configurations, modify the existing parts, add new parts, or learn how Realmodal is
 working, please refer to the [full document](doc/document.md).    
 
+### Common Questions
+**Q:  I meet errors when installing and using OpenPose on the server, how should I proceed?**
+
+A: Most errors we meet are due to the mismatched cuda setting, which includes: 
+1. The cmake process can't find CuDNN, i.e., the error is: 
+```shell script
+... ... 
+-- cuDNN not found
+-- Found gflags  (include: /usr/include, library: /usr/lib/x86_64-linux-gnu/libgflags.so)
+-- Found glog    (include: /usr/include, library: /usr/lib/x86_64-linux-gnu/libglog.so)
+-- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so;-lpthread (found version "3.0.0") 
+-- cuDNN not found.
+... ... 
+```
+Check whether you have your CUDA and CuDNN installed on your machine.
+
+2. Realmodal can't find openpose, the error is 
+```
+Error: OpenPose library could not be found. Did you enable `BUILD_PYTHON` in CMake and have this Python script in the right folder?
+```
+Make sure you build the python modules of OpenPose to use this project. To do so, you need to compile OpenPose 
+twice and at the second time, you need to set `-DBUILD_PYTHON=ON` when doing `c+make`. See document 
+[here](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/1f1aa9c59fe59c90cca685b724f4f97f76137224/doc/03_python_api.md#installation)
+
+
+
+
 ### Todos
 * Codes:
     * Add default configuration files for all parts so one does not need to configure everything before using.
