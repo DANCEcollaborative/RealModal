@@ -1,6 +1,0 @@
-termcolor
-omegaconf
-numpy
-opencv-python
-selenium
-stomp.py

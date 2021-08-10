@@ -128,6 +128,28 @@ and fetch values.
    {'first': 'first value', 'second': 'second value'}
    ```
   
+## Logging 
+In order to make debugging easier and monitor the status of the system, it's necessary to print logs to the console. In
+this project, you can use logger instead of the "print()" method for a better debugging experience. 
+### Loggers
+We use the [logging](https://docs.python.org/3/library/logging.html) package in this project. In order to create a 
+logger, you can simply use `get_logger` in `common.logprint` like:
+```python
+from common.logprint import get_logger
+
+logger = get_logger(__name__)
+logger.debug("This is a log for debugging.")
+logger.info("This is a log for information.")
+logger.warning("This is a log for warnings.")
+logger.error("This is a log for errors.")
+logger.fatal("This is a log for fatal errors, the program probably crashes")
+```
+
+The parameter passed to the `get_logger` function is the name of the logger. We recommend you to us `__name__` so when 
+logs are printed, you can easily find which module gives you the information.   
+
+### Periodic Reports
+  
 ## Configuration Details
 ### Overview
 Our project uses `.yaml` file to manage configurations between different settings. It is a language similar to `.json` 
@@ -153,8 +175,12 @@ For most components of this project, configurations are passed and stored in `se
 ### Meta-Information
 * **config_name**: a string. The name of this configuration.
 * **config_version**: a string. The version of this configuration.
-* **debug**: True or False. When turning on, Realmodal will print more information to the console for easier debugging.
-*May be removed or changed in the recent future*.
+* **logging**: a set of entries. 
+  * **logging_level**: a string in `{debug, info, warning, error, fatal)`. The minimum level of logs to be printed to
+  the console. 
+  * **report_level**: a string in `{debug, info, warning, error, fatal)`. The minimum level of reports to be printed to
+  the console.
+  * **report_period**: an integer. The interval between two reports (unit: second).  
 
 ### Address
 The address of the server. The server will set up services on specified ports and communicate with the client.

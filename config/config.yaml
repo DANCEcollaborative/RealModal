@@ -2,18 +2,18 @@
 config_name: "Sigdial 2020 - Demo"
 config_version: 1.0
 
-# Debugging mode will output more log.
+# How the logging and reporting modules are working.
 logging:
   logging_level: info
   report_level: info
-  report_period: 10
+  report_period: 30
 
 # The ip address to establish sockets between clients and server.
 address: &address
   ip: "128.2.204.16"
   port:
-    upstream: 6416
-    downstream: 6417
+    upstream: 7416
+    downstream: 7417
 
 component: &component
   openpose:

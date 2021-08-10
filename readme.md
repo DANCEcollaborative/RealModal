@@ -67,7 +67,7 @@ working, please refer to the [full document](doc/document.md).
 **Q:  I meet errors when installing and using OpenPose on the server, how should I proceed?**
 
 A: Most errors we meet are due to the mismatched cuda setting, which includes: 
-1. The cmake process can't find CuDNN, i.e., the error is: 
+* The cmake process can't find CuDNN, i.e., the error is: 
 ```shell script
 ... ... 
 -- cuDNN not found
@@ -77,16 +77,27 @@ A: Most errors we meet are due to the mismatched cuda setting, which includes:
 -- cuDNN not found.
 ... ... 
 ```
-Check whether you have your CUDA and CuDNN installed on your machine.
-
-2. Realmodal can't find openpose, the error is 
+   Check whether you have your CUDA and CuDNN installed on your machine. If so, you can add the following environment
+   variable before running `cmake` to specify the use of cuda:
+```shell script
+export 
+```
+* The version of GNU is not supported. This is because the version of your `gcc/g++/cc/c++` is not compatible with Cuda.
+Please specify another version of cuda or choose a lower version of `gcc/g++/cc/c++` instead.  
+* Realmodal can't find openpose, the error is 
 ```
 Error: OpenPose library could not be found. Did you enable `BUILD_PYTHON` in CMake and have this Python script in the right folder?
+```
+or 
+```
+ImportError: cannot import name 'pyopenpose' from partially initialized module 'openpose' (most likely due to a circular import)
 ```
 Make sure you build the python modules of OpenPose to use this project. To do so, you need to compile OpenPose 
 twice and at the second time, you need to set `-DBUILD_PYTHON=ON` when doing `c+make`. See document 
 [here](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/1f1aa9c59fe59c90cca685b724f4f97f76137224/doc/03_python_api.md#installation)
 
+Also, if you are using virtual environment such as conda when installing OpenPose, remember to specify the python binary
+file and python library file you're using, see issue [here](https://github.com/CMU-Perceptual-Computing-Lab/openpose/issues/1623).
 
 
 

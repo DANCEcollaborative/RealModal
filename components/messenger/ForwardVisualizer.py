@@ -164,6 +164,7 @@ class ForwardVisualizer(ImageMessenger):
             logger.info("Socket successfully restarted!")
 
     def process_image(self, img):
+        self.num_recv_from_PSI += 1
         if self.running:
             if 'camera_id' not in self.property:
                 return
@@ -267,5 +268,4 @@ class ForwardVisualizer(ImageMessenger):
         logger.info(f"Restarted sockets for {self.num_restart_socket} time(s).")
 
     def on_message(self, msg):
-        self.num_recv_from_PSI += 1
         super().on_message(msg)
