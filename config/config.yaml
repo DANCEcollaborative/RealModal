@@ -2,25 +2,25 @@
 config_name: "Sigdial 2020 - Demo"
 config_version: 1.0
 
-# How the logging and reporting modules are working.
+# Debugging mode will output more log.
 logging:
   logging_level: info
   report_level: info
-  report_period: 30
+  report_period: 10
 
 # The ip address to establish sockets between clients and server.
 address: &address
-  ip: "128.2.204.16"
+  ip: "128.2.204.127"
   port:
-    upstream: 7416
-    downstream: 7417
+    upstream: 5516
+    downstream: 5517
 
 component: &component
   openpose:
     topic: OpenPose
     process_interval: 0.4
     init_param:
-      path: "/usr0/home/yansenwa/smartlab_component/openpose_misty/openpose"
+      path: "/usr0/home/rcmurray/git/openpose"
   position:
     topic: Position
     backend: OpenPose
@@ -65,7 +65,8 @@ client:
     topic_in: PSI_Bazaar_Text
     topic_out: Python_PSI_Text
     agent_type: Solitaire
-    url: "https://misty.lti.cs.cmu.edu/bazaar/login?roomName=diamondkatapsi&roomId=10010&id=1&username=yansen"
+    # url: "https://bazaar.lti.cs.cmu.edu/bazaar/login?roomName=diamondkatapsi&roomId=10021&id=1&username=ChasBot"
+    url: "http://localhost/chat/FO178/1/ChasBot/1/?html=share_chat"
     GUI: True
 
 # Define processors and handlers for server
