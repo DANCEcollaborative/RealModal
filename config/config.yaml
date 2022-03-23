@@ -68,6 +68,11 @@ client:
     # url: "https://bazaar.lti.cs.cmu.edu/bazaar/login?roomName=diamondkatapsi&roomId=10021&id=1&username=ChasBot"
     url: "http://localhost/chat/FO178/1/ChasBot/1/?html=share_chat"
     GUI: True
+  macaw_messenger:
+    active: True
+    topic_in: PSI_Macaw_Text
+    bot_token_id: 5215270803:AAE23TLjSP0x4ZBdBsx-CIStxFaXh7PjV9E
+    chat_id: -711319022
 
 # Define processors and handlers for server
 # You can add processors here, and you can change the type of the handler by modifying recv_server and send_server

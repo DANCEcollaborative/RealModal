@@ -6,7 +6,6 @@ if __name__ == "__main__":
     # TODO: add support for argparse
     config_path = "config/config.yaml"
     config = load_yaml(config_path)
-
     if "logging" in config:
         log_config = config["logging"]
         level = log_config.get("logging_level", "info")
@@ -19,7 +18,6 @@ if __name__ == "__main__":
     from common.Report import ReportManager
     import _thread
     import time
-
     # set up report manager
     if "logging" in config:
         report_period = config.logging.get("report_period", 60)
@@ -33,11 +31,10 @@ if __name__ == "__main__":
         for corner in config["room_corner"]:
             corner_list.append(Point3D(corner))
         GV.register("room.corner", corner_list)
-
+    
     if "client" in config:
         # Initialize communication manager to receive massage from ActiveMQ.
         GV.register("stomp_manager", CM())
-
         # Initialize messengers
         for key in config["client"]:
             messenger_cls = GV.get_messenger_class(key)
