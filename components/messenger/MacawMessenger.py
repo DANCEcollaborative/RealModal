@@ -4,6 +4,7 @@ from DialogAgents import agent_build_helper
 from common.logprint import get_logger
 import requests
 import urllib.parse
+import os 
 
 logger = get_logger(__name__)
 
@@ -15,8 +16,8 @@ class MacawMessenger(TextMessenger):
         if not config.active:
             return
         config.topic = config.topic_in
-        self.chat_id = config.chat_id
-        self.bot_token_id = config.bot_token_id
+        self.chat_id = os.getenv('BOT_CHAT_ID')
+        self.bot_token_id = os.getenv('BOT_TOKEN_ID')
         super(MacawMessenger, self).__init__(config)
 
     def process_text(self, text):
